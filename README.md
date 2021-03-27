@@ -2,7 +2,9 @@
 
 We introduce a quality-aware design to increase data processing productivity, by leveraging an open-source [Arc data framework](https://arc.tripl.ai/) for a user-centered declarative ETL solution. We take considerations of the needs and expected skills from customers in data analytics, and accelerate their interaction with ETL practice in order to foster simplicity, while maximizing efficiency.
 
-The sample provides two ways of running the solution shown in the Architecture diagram, ie.Spark on EKS by Argo Workflows tool and [EMR on EKS](https://aws.amazon.com/emr/features/eks/) approach. 
+The sample provides two ways of running the solution shown in the Architecture diagram:
+1. Spark on EKS by Argo Workflows tool
+2. [EMR on EKS](https://aws.amazon.com/emr/features/eks/) 
 
 ![](/spark-on-eks/images/two_architecture.png)
 
