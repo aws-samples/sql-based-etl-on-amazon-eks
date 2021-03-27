@@ -1,0 +1,8 @@
+image:
+  tag: v2.1.3
+region: {{region_name}}
+vpcId: {{vpc_id}}
+clusterName: {{cluster_name}}
+serviceAccount:
+  create: false
+  name: alb-aws-load-balancer-controller

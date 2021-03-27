@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  namespace: spark
+  generateName: word-count-
+spec:
+  schedule: "* 1 * * *"
+  concurrencyPolicy: "Replace"
+  startingDeadlineSeconds: 4500
+  workflowSpec:
+    serviceAccountName: nativejob
+    entrypoint: spotinterruption
+    # must complete in 4h
+    activeDeadlineSeconds: 14400
+    ttlStrategy:
+      secondsAfterCompletion: 28800
+    templates:
+    - name: spotinterruption
+      inputs:
+        parameters:
+        - name: image
+          value: ghcr.io/tripl-ai/arc:latest
+      script:
+        image: "{{inputs.parameters.image}}"
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+        command: ["/bin/sh"]
+        source: |
+          # verbose logging
+          set -ex
+
+          # submit job
+          /opt/spark/bin/spark-submit \
+          --master k8s://kubernetes.default.svc:443 \
+          --deploy-mode cluster \
+          --name 'Word Count' \
+          --conf spark.kubernetes.allocation.batch.size=10 \
+          --conf spark.kubernetes.container.image={{inputs.parameters.image}}  \
+          --conf spark.kubernetes.container.image.pullPolicy=Always \
+          --conf spark.kubernetes.namespace=spark \
+          --conf spark.driver.memory=1g \
+          --conf spark.kubernetes.driver.request.cores=2 \
+          --conf spark.kubernetes.driver.limit.cores=3 \
+          --conf spark.executor.instances=10 \
+          --conf spark.executor.memory=10g \
+          --conf spark.kubernetes.executor.request.cores=2 \
+          --conf spark.kubernetes.executor.limit.cores=3 \
+          --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
+          --conf spark.hadoop.fs.s3a.fast.upload=true \
+          --conf spark.hadoop.fs.s3a.aws.credentials.provider=com.amazonaws.auth.WebIdentityTokenCredentialsProvider \
+          --conf spark.kubernetes.authenticate.driver.serviceAccountName=nativejob \
+          "s3a://{{codeBucket}}/app_code/job/wordcount.py" \
+          "s3a://{{codeBucket}}/app_code/output/native"
+  

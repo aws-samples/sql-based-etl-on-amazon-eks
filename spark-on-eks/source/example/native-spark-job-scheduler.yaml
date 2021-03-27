@@ -1,0 +1,83 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: word-count
+  namespace: spark
+spec:
+  type: Python
+  pythonVersion: "3"
+  deployMode: cluster
+  image: ghcr.io/tripl-ai/arc:arc_3.7.0_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.5.0
+  imagePullPolicy: Always
+  mainApplicationFile: "s3a://$(BUCKET_PARAM)/app_code/job/wordcount.py"
+  arguments: ["s3a://$(BUCKET_PARAM)/app_code/output/native"]
+  sparkVersion: "3.0.1"
+  sparkConf:
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
+    "spark.kubernetes.allocation.batch.size": "10" 
+    "spark.io.encryption.enabled": "true"
+    "spark.kubernetes.local.dirs.tmpfs": "true"
+  volumes:
+    - name: spark-local-dir-1
+      hostPath:
+        path: "/tmp"
+        type: Directory      
+  dynamicAllocation:
+    enabled: true
+    initialExecutors: 1
+    minExecutors: 1
+    maxExecutors: 20
+  restartPolicy:
+    type: OnFailure
+    onFailureRetries: 3
+    onFailureRetryInterval: 10
+    onSubmissionFailureRetries: 5
+    onSubmissionFailureRetryInterval: 20
+  driver:
+      # driver run on Spot Ec2
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:  
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: lifecycle
+                operator: In 
+                values: 
+                - Ec2Spot
+                # - OnDemand  
+  executor:
+   # executors run on Spot
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:     
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: lifecycle
+                operator: In 
+                values: 
+                - Ec2Spot              
+  driver:
+    env:
+      - name: BUCKET_PARAM
+        valueFrom:
+          configMapKeyRef:
+            name: special-config
+            key: codeBucket
+    cores: 1
+    memory: "1G"
+    labels:
+      role: driver
+    serviceAccount: nativejob
+    volumeMounts:
+      - name: spark-local-dir-1
+        mountPath: "/tmp"
+  executor:
+    cores: 1
+    instances: 10
+    memory: "5G"
+    labels:
+      role: executor
+    volumeMounts:
+      - name: spark-local-dir-1
+        mountPath: "/tmp"

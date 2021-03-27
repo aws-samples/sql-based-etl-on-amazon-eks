@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: arc-jupyter
+  namespace: spark
+spec:
+  serviceAccountName: arcjob
+  securityContext:
+    fsGroup: 65534
+  containers:
+  - name: arc-jupyter
+    image: ghcr.io/tripl-ai/arc-jupyter:latest 
+    imagePullPolicy: IfNotPresent
+    env:
+      - name: JAVA_OPTS
+        value: "-Xmx4G"
+      - name: CONF_NUM_ROWS
+        value: "10"
+      - name: CONF_STORAGE_LEVEL
+        value: "MEMORY_ONLY_SER"
+      - name: conf_spark_sql_extensions
+        value: "io.delta.sql.DeltaSparkSessionExtension"
+    resources:
+      requests:
+        cpu: "1"
+        memory: "5Gi"
