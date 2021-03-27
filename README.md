@@ -44,7 +44,10 @@ cd sql-based-etl-on-amazon-eks
 
 The provisining takes about 30 minutes to complete. See the `troubleshooting` section if you have a problem during the deployment. 
 
-The sample provides two options to submit ETL jobs. See the detailed deployment instruction in [Spark on EKS](/spark-on-eks/README.md) and [EMR on EKS](/emr-on-eks/README.md).
+The sample provides two options to submit ETL jobs. See the detailed deployment instruction:
+
+1. [Spark on EKS](/spark-on-eks/README.md)
+2. [EMR on EKS](/emr-on-eks/README.md)
 
 
 ## Troubleshooting
