@@ -8,23 +8,22 @@ A repository to introduce a quality-aware design to increase data processing pro
 2. AWS CLI version 1.
   Windows: [MSI installer](https://docs.aws.amazon.com/cli/latest/userguide/install-windows.html#install-msi-on-windows)
   Linux, macOS or Unix: [Bundled installer](https://docs.aws.amazon.com/cli/latest/userguide/install-macos.html#install-macosos-bundled)
-3. [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is avaialbe in your **region**. Otherwise, run all the commands in your local commandline tool.
+3. [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is available in your **region**. Otherwise, run all the commands in your local commandline tool.
 
 
 ## Solution Overview
-![](/spark-on-eks/images/architecture.png)
+![](/spark-on-eks/images/two_architecture.png)
 
 ### Test job in Jupyter
 ![](/spark-on-eks/images/run_jupyter.gif)
 
+
 ### Test Spark Driver self-recovery
 ![](/spark-on-eks/images/driver_interruption_test.gif)
 
-### Submit Spark job in Argo
+### Submit Spark job by Argo tool
 ![](/spark-on-eks/images/submit_job_in_argo.gif)
 
-### Submit Spark job in k8s
-![](/spark-on-eks/images/submit_native_spark.gif)
 
 
 ## Pre-deployment

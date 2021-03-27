@@ -4,13 +4,8 @@ This is a project for a solution - SQL based ETL with a declarative framework po
 We introduce a quality-aware design to increase data processing productivity, by leveraging an open-source [Arc data framework](https://arc.tripl.ai/) for a user-centered declarative ETL solution. Additionally, we take considerations of the needs and expected skills from customers in data analytics, and accelerate their interaction with ETL practice in order to foster simplicity, while maximizing efficiency.
 
 ## Overview
-![](/images/architecture.png)
+![](images/architecture.png)
 
-### Test job in Jupyter
-![](/images/run_jupyter.gif)
-
-### Submit Spark job in Argo
-![](/images/submit_job_in_argo.gif)
 
 ### Submit Spark job in k8s
 ![](images/submit_native_spark.gif)
@@ -60,8 +55,8 @@ aws configure
 * Clone the project
 
 ```bash
-git clone https://github.com/aws-samples/sql-based-etl-on-eks.git
-cd sql-based-etl-on-eks
+git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
+cd sql-based-etl-on-amazon-eks
 ```
 
 [*^ back to top*](#Table-of-Contents)
@@ -149,7 +144,7 @@ cdk deploy --parameters jhubuser=<random_login_name> --parameters datalakebucket
 ### Install kubernetes tool
 Go to [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), select your **region** the solution was deployed. Run the command: 
  ```bash
- curl https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-eks/master/deployment/setup_cmd_tool.sh | bash
+ curl https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/spark-on-eks/deployment/setup_cmd_tool.sh?token=ANQJ5WU6CVX44S5OVUKKPCLANCGLS | bash
  ```
 NOTE: each CloudShell session will timeout after idle for 20 minutes, the installation may need to run again.
 
@@ -170,7 +165,7 @@ kubectl get svc
 ### Test Arc ETL job in Jupyter
 The sample [contacts data](/deployment/app_code/data/) is not real data. They are generated programatically by a [python script](https://raw.githubusercontent.com/cartershanklin/hive-scd-examples/master/merge_data/generate.py).
 
-![](/images/fake_data.gif)
+![](images/fake_data.gif)
 
 1. Login to Jupyter WebUI found at [CloudFormation Output](https://console.aws.amazon.com/cloudformation/).
 
@@ -182,7 +177,7 @@ The sample [contacts data](/deployment/app_code/data/) is not real data. They ar
   ```
   NOTE: The Jupyter session will end if it is inactive for 30 minutes. You may lose your work, if it hasn't been saved back to a Git repository. Or you can download it to your computer. The download capability is configurable and could be disabled in order to improve the data security.
 
-2. Open a sample notebook `sql-based-etl/source/example/scd2-job.ipynb` on your JupyterHub instnace, which is cloned from the current git repo.
+2. Open a sample notebook `source/example/scd2-job.ipynb` on your JupyterHub instnace, which is cloned from the current git repo.
 
   This example will create a table to support [Slowly Changing Dimension Type 2](https://www.datawarehouse4u.info/SCD-Slowly-Changing-Dimensions.html) format. You will get hands-on experience on SQL-based ETL by walking through the incremental data load in Data Lake.
 
@@ -248,9 +243,9 @@ kubectl get svc
 * Replace the placeholder by an S3 bucket name found in [CloudFormation Console](https://console.aws.amazon.com/cloudformation). Run the command by AWS CloudShell then check progress in Argo UI.
 ```bash
 app_code_bucket=<your_codeBucket_name>
-argo submit https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-eks/master/source/example/scd2-job-scheduler.yaml -n spark --watch  -p codeBucket=$app_code_bucket
+argo submit https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/spark-on-eks/source/example/scd2-job-scheduler.yaml -n spark --watch  -p codeBucket=$app_code_bucket
 ```
-![](/images/3-argo-job-dependency.png)
+![](images/3-argo-job-dependency.png)
 
 * Query the table in [Athena](https://console.aws.amazon.com/athena/) to see if it has the same outcome as your testing in Jupyter. 
 
@@ -269,11 +264,12 @@ Reuse the Arc docker image to run a native Spark application, defined by k8s's C
   * Monitor a job on Spark WebUI
 
 #### Submit a job via kubectl 
-* Execute the command on [AWS CloudShell](https://console.aws.amazon.com/cloudshell/home?region=us-east-1).
+* Execute the command on [AWS CloudShell](https://console.aws.amazon.com/cloudshell/).
 
 ```bash
 kubectl create -n spark configmap special-config --from-literal=codeBucket=<your_codeBucket_name>
-kubectl apply -f https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-eks/master/source/example/native-spark-job-scheduler.yaml
+kubectl apply -f https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/spark-on-eks/source/example/native-spark-job-scheduler.yaml
+# kubectl apply -f source/example/native-spark-job-scheduler.yaml
 
 # watch the progress in EKS
 kubectl get pod -n spark
@@ -321,7 +317,7 @@ The auto-scaling is configured to be balanced within two AZs. Depending on your 
 kubectl get node --label-columns=lifecycle,topology.kubernetes.io/zone
 kubectl get pod -n spark
 ```
-![](/images/4-auto-scaling.png)
+![](images/4-auto-scaling.png)
 
 [*^ back to top*](#Table-of-Contents)
 ## Useful Commands
@@ -333,17 +329,10 @@ kubectl get pod -n spark
 
 [*^ back to top*](#Table-of-Contents)
 ## Clean up
-Go to the repo's root directory, and run the clean up script.
+Go to the repo's root directory, and run the clean up script. 
+If it fails, manually delete resources from the CloudFormation console.
 
 ```bash
-cd sql-based-etl
+cd sql-based-etl-on-amazon-eks/spark-on-eks
 ./deployment/delete_all.sh
 ```
-[*^ back to top*](#Table-of-Contents)
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
-## License
-
-This library is licensed under the MIT-0 License. See the [LICENSE](LICENSE.txt) file.
