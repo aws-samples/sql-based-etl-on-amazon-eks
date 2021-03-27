@@ -1,17 +1,9 @@
 # SQL-based ETL with Spark on EKS
 
-A repository to introduce a quality-aware design to increase data processing productivity, by leveraging an open-source [Arc data framework](https://arc.tripl.ai/) for a user-centered declarative ETL solution. We take considerations of the needs and expected skills from customers in data analytics, and accelerate their interaction with ETL practice in order to foster simplicity, while maximizing efficiency.
+We introduce a quality-aware design to increase data processing productivity, by leveraging an open-source [Arc data framework](https://arc.tripl.ai/) for a user-centered declarative ETL solution. We take considerations of the needs and expected skills from customers in data analytics, and accelerate their interaction with ETL practice in order to foster simplicity, while maximizing efficiency.
 
+The sample provides two ways of running the solution shown in the Architecture diagram, ie.Spark on EKS by Argo Workflows tool and [EMR on EKS](https://aws.amazon.com/emr/features/eks/) approach. 
 
-## Prerequisite
-1. Python 3.6 or later. You can find information about downloading and installing Python [here](https://www.python.org/downloads/).
-2. AWS CLI version 1.
-  Windows: [MSI installer](https://docs.aws.amazon.com/cli/latest/userguide/install-windows.html#install-msi-on-windows)
-  Linux, macOS or Unix: [Bundled installer](https://docs.aws.amazon.com/cli/latest/userguide/install-macos.html#install-macosos-bundled)
-3. [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is available in your **region**. Otherwise, run all the commands in your local commandline tool.
-
-
-## Solution Overview
 ![](/spark-on-eks/images/two_architecture.png)
 
 ### Test job in Jupyter
@@ -25,9 +17,16 @@ A repository to introduce a quality-aware design to increase data processing pro
 ![](/spark-on-eks/images/submit_job_in_argo.gif)
 
 
+## Prerequisite
+1. Python 3.6 or later. You can find information about downloading and installing Python [here](https://www.python.org/downloads/).
+2. AWS CLI version 1.
+  Windows: [MSI installer](https://docs.aws.amazon.com/cli/latest/userguide/install-windows.html#install-msi-on-windows)
+  Linux, macOS or Unix: [Bundled installer](https://docs.aws.amazon.com/cli/latest/userguide/install-macos.html#install-macosos-bundled)
+3. [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is available in your **region**. Otherwise, run all the commands in your local commandline tool.
+
 
 ## Pre-deployment
-Assume your AWS CLI can communicate with services in your deployment account. Otherwise, either set your profile by `export AWS_PROFILE=<your_aws_profile>` , or run the following configuration to setup your AWS account access.
+Assume the AWS CLI on your computer can communicate with services in your deployment account. Otherwise, either set your profile by `export AWS_PROFILE=<your_aws_profile>` , or run the following configuration to setup your AWS account access.
 
 ```bash
 aws configure
@@ -43,7 +42,7 @@ cd sql-based-etl-on-amazon-eks
 
 The provisining takes about 30 minutes to complete. See the `troubleshooting` section if you have a problem during the deployment. 
 
-The sample provides two options to run the solution, eg. Spark on EKS or [EMR on EKS](https://aws.amazon.com/emr/features/eks/) approach. See the detailed deployment instruction in [Spark on EKS](/spark-on-eks/README.md) and [EMR on EKS](/emr-on-eks/README.md).
+The sample provides two options to submit ETL jobs. See the detailed deployment instruction in [Spark on EKS](/spark-on-eks/README.md) and [EMR on EKS](/emr-on-eks/README.md).
 
 
 ## Troubleshooting
