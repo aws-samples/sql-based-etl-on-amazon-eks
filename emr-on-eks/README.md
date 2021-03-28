@@ -11,11 +11,11 @@ AWS Launched [EMR on EKS](https://aws.amazon.com/emr/features/eks/) and this sam
 1. Open AWS CloudShell in us-east-1: [link to AWS CloudShell](https://console.aws.amazon.com/cloudshell/home?region=us-east-1)
 2. Run the following command to provision a new EKS cluster `eks-cluster` backed by Fargate and build a virtual EMR cluster `emr-on-eks-cluster` 
     ```bash
-    curl https://raw.githubusercontent.com/iizotov/tripl-ai-arc-on-emr-on-eks/main/provision.sh | bash
+    curl https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/emr-on-eks/provision.sh | bash
     ```
 3. Once provisioning is complete (~10 min), run the following command to submit a new Spark job on the virtual EMR cluster:
     ```bash
-    curl https://raw.githubusercontent.com/iizotov/tripl-ai-arc-on-emr-on-eks/main/submit_arc_job.sh | bash
+    curl https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/emr-on-eks/submit_arc_job.sh | bash
     ```
     The sample job will create an output S3 bucket, load the [TLC green taxi trip records](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page) from public `s3://nyc-tlc/trip*data/green_tripdata*.csv`, apply schema, convert it into Parquet and store it in the output S3 bucket.
 
@@ -37,7 +37,7 @@ kubectl get po -n emr
 # Cleanup
 To clean up resources, run:
 ```bash
-curl https://raw.githubusercontent.com/iizotov/tripl-ai-arc-on-emr-on-eks/main/deprovision.sh | bash
+curl https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/emr-on-eks/deprovision.sh | bash
 ```
 
 
