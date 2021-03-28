@@ -1,22 +1,19 @@
 # SQL-based ETL with Spark on EKS
-This is a project for a solution - SQL based ETL with a declarative framework powered by Apache Spark. 
+A project for a solution - SQL based ETL with a declarative framework powered by Apache Spark. 
 
-We introduce a quality-aware design to increase data processing productivity, by leveraging an open-source [Arc data framework](https://arc.tripl.ai/) for a user-centered declarative ETL solution. Additionally, we take considerations of the needs and expected skills from customers in data analytics, and accelerate their interaction with ETL practice in order to foster simplicity, while maximizing efficiency.
-
-## Overview
+## Spark on EKS Overview
 ![](images/architecture.png)
 
-
-### Submit Spark job in k8s
+### Submit ETL job in k8s
 ![](images/submit_native_spark.gif)
 
 #### Table of Contents
 * [Prerequisites](#Prerequisites) 
 * [Deploy Infrastructure](#Deploy-Infrastructure)
-  * [Prepare Deployment](#Prepare-deployment)
+  * [Troubleshooting](#Troubleshooting)
+  * [Clone the project](#Clone-the-project)
   * [Deploy via CloudFormation template](#Deploy-via-CloudFormation-template)
   * [Deploy via CDK](#Deploy-via-CDK)
-* [Troubleshooting](#Troubleshooting)
 * [Post Deployment](#Post-Deployment)
   * [Install kubernetes tool](#Install-kubernetes-tool)
   * [Connect to EKS](#Connect-to-EKS-cluster)
@@ -31,32 +28,36 @@ We introduce a quality-aware design to increase data processing productivity, by
     * [Auto scaling & Dynamic resource allocation](#Explore-EKS-features-Auto-Scaling-across-Multi-AZ-and-Spark's-Dynamic-Allocation-support)
 * [Useful Commands](#Useful-Commands)  
 * [Clean Up](#clean-up)
-* [Security](#Security)
-* [License](#License)
+
 
 ## Prerequisites 
-1. Python 3.6 or later. You can find information about downloading and installing Python [here](https://www.python.org/downloads/).
-2. AWS CLI version 1.
-  Windows: [MSI installer](https://docs.aws.amazon.com/cli/latest/userguide/install-windows.html#install-msi-on-windows)
-  Linux, macOS or Unix: [Bundled installer](https://docs.aws.amazon.com/cli/latest/userguide/install-macos.html#install-macosos-bundled)
+
+1. AWS CLI is configured to communicate with services in your deployment account. Either set your profile by `export AWS_PROFILE=<your_aws_profile>` , or run `aws configure`.
+2. [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is available in your deployment **region**. Otherwise, run all post deployment commands in a local computer.
 
 ## Deploy Infrastructure
 
 This project is set up like a standard Python project. The `source/cdk.json` file tells where the application entry point is. 
  
-The provisining takes about 30 minutes to complete. See the `troubleshooting` section if you have a problem during the deployment. There are two ways to deploy the solution, either by CloudFormation template or by [AWS Cloud Development Kit (AWS CDK)](https://docs.aws.amazon.com/cdk/latest/guide/home.html).
+The provisining takes about 30 minutes to complete. See the `troubleshooting` section if you have a deployment problem. We provide two ways to deploy:
+1. By CloudFormation template 
+2. Or by [AWS Cloud Development Kit (AWS CDK)](https://docs.aws.amazon.com/cdk/latest/guide/home.html)
 
-### Prepare deployment
-Assume your AWS CLI can communicate with services in your deployment account. Otherwise, either set your profile by `export AWS_PROFILE=<your_aws_profile>` , or run the following configuration to setup your AWS account access.
 
-```bash
-aws configure
-```
-* Clone the project
+[*^ back to top*](#Table-of-Contents)
+### Troubleshooting
+
+1. If you see the issue `[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1123)`, most likely it means no default certificate authority for your Python installation on OSX. Refer to the [answer](https://stackoverflow.com/questions/52805115/0nd) installing `Install Certificates.command` should fix your local environment. Otherwise, use [Cloud9](https://aws.amazon.com/cloud9/details/) to deploy the CDK instead.
+
+2. If an error appears during the CDK deployment: `Failed to create resource. IAM role’s policy must include the "ec2:DescribeVpcs" action`. The possible causes are: 1) you have reach the quota limits of Amazon VPC resources per Region in your AWS account. Please deploy to a different region or a different account. 2) based on this [CDK issue](https://github.com/aws/aws-cdk/issues/9027), you can retry without any changes, it will work. 3) If you are in a branch new AWS account, manually delete the AWSServiceRoleForAmazonEKS from IAM role console before the deployment. 
+
+
+### Clone the project
 
 ```bash
 git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
 cd sql-based-etl-on-amazon-eks
+cd spark-on-eks
 ```
 
 [*^ back to top*](#Table-of-Contents)
@@ -89,11 +90,11 @@ The template takes 2 optional parameters:
 [*^ back to top*](#Table-of-Contents)
 ### Deploy via AWS CDK
 
-Alternatively, you can spin up the solution infrastructure via [AWS Cloud Development Kit](https://cdkworkshop.com/), in short, AWS CDK. The CDK deployment requires Node.js (>= 10.3.0) and AWS CDK Toolkit. To install Node.js visit the [node.js](https://nodejs.org/en/) website. To install the CDK toolkit, follow the [instruction](https://cdkworkshop.com/15-prerequisites/500-toolkit.html). 
+Alternatively, you can spin up the solution infrastructure by [AWS Cloud Development Kit](https://cdkworkshop.com/), in short, AWS CDK. The CDK deployment requires Node.js (>= 10.3.0) and AWS CDK Toolkit. To install Node.js visit the [node.js](https://nodejs.org/en/) website. To install the CDK toolkit, follow the [instruction](https://cdkworkshop.com/15-prerequisites/500-toolkit.html). 
  
-Two reasons to deploy the solution resources by AWS CDK:
+Two reasons to deploy the cloud resources by AWS CDK:
 1. CDK provides local development,debug experience and fail fast.
-2. Convenient to customize the solution with a quicker test response. For example remove a nested stack CloudFront and enable TLS in ALB.
+2. Convenient to customize the solution with a quicker test response. For example remove a nested stack CloudFront and enable TLS in Application Load Balancer.
  
 ```bash
 python3 -m venv .env
@@ -111,31 +112,21 @@ pip install -e source
 ```
  
 * Option1: Deploy with default (recommended)
-
 ```bash
 cd source
 cdk deploy
 ```
 * Option2: Jupyter login with a customized username
-
 ```bash
 cd source
 cdk deploy --parameters jhubuser=<random_login_name>
 ```
 * Option3: If ETL your own data, use the parameter datalakebucket
 Ensure your S3 bucket is in the same region as the deployment region.
-
 ```bash
 cd source
 cdk deploy --parameters jhubuser=<random_login_name> --parameters datalakebucket=<existing_datalake_bucket>
 ```
-
-[*^ back to top*](#Table-of-Contents)
-## Troubleshooting
-
-1. If you see the issue `[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1123)`, most likely it means no default certificate authority for your Python installation on OSX. Refer to the [answer](https://stackoverflow.com/questions/52805115/0nd) installing `Install Certificates.command` should fix your local environment. Otherwise, use [Cloud9](https://aws.amazon.com/cloud9/details/) to deploy the CDK instead.
-
-2. If an error appears during the CDK deployment: `Failed to create resource. IAM role’s policy must include the "ec2:DescribeVpcs" action`. The possible causes are: 1) you have reach the quota limits of Amazon VPC resources per Region in your AWS account. Please deploy to a different region or a different account. 2) based on this [CDK issue](https://github.com/aws/aws-cdk/issues/9027), you can retry without any changes, it will work. 3) If you are in a branch new AWS account, manually delete the AWSServiceRoleForAmazonEKS from IAM role console before the deployment. 
 
 
 [*^ back to top*](#Table-of-Contents)

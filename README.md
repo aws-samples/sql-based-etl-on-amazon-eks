@@ -24,16 +24,12 @@ The sample provides two ways of running the solution shown in the architecture d
 2. AWS CLI version 1.
   Windows: [MSI installer](https://docs.aws.amazon.com/cli/latest/userguide/install-windows.html#install-msi-on-windows)
   Linux, macOS or Unix: [Bundled installer](https://docs.aws.amazon.com/cli/latest/userguide/install-macos.html#install-macosos-bundled)
-3. [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is available in your **region**. Otherwise, run all the commands in your local commandline tool.
-
-
-## Pre-deployment
-Assume the AWS CLI on your computer can communicate with services in your deployment account. Otherwise, either set your profile by `export AWS_PROFILE=<your_aws_profile>` , or run the following configuration to setup your AWS account access.
-
+3. AWS CLI is configured to communicate with services in your deployment account. Otherwise, either set your profile by `export AWS_PROFILE=<your_aws_profile>` , or run the following configuration to setup your AWS account access.
 ```bash
 aws configure
-```
-* Clone the project
+```  
+
+## Clone the project
 
 ```bash
 git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
