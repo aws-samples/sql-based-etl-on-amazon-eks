@@ -33,10 +33,7 @@ setuptools.setup(
         "aws-cdk.aws_cloudfront==1.91.0",
         "aws-cdk.aws_cloudfront_origins==1.91.0",
         "aws-cdk.aws_efs==1.91.0",
-        # "aws-cdk.aws_autoscaling==1.91.0",
-        "pyyaml==5.3",
-        # "pytest==6.1.2",
-        # "pytest-cov==2.10.1"
+        "pyyaml==5.4",
     ],
 
     python_requires=">=3.6",
