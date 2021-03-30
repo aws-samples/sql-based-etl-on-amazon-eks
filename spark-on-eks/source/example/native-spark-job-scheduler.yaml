@@ -33,9 +33,9 @@ spec:
     onFailureRetries: 3
     onFailureRetryInterval: 10
     onSubmissionFailureRetries: 5
-    onSubmissionFailureRetryInterval: 20
+    onSubmissionFailureRetryInterval: 20          
   driver:
-      # driver run on Spot Ec2
+    # driver run on Spot
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:  
@@ -45,19 +45,7 @@ spec:
                 operator: In 
                 values: 
                 - Ec2Spot
-                # - OnDemand  
-  executor:
-   # executors run on Spot
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:     
-          nodeSelectorTerms:
-            - matchExpressions:
-              - key: lifecycle
-                operator: In 
-                values: 
-                - Ec2Spot              
-  driver:
+                # - OnDemand    
     env:
       - name: BUCKET_PARAM
         valueFrom:
@@ -73,6 +61,16 @@ spec:
       - name: spark-local-dir-1
         mountPath: "/tmp"
   executor:
+   # executors run on Spot
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:     
+          nodeSelectorTerms:
+            - matchExpressions:
+              - key: lifecycle
+                operator: In 
+                values: 
+                - Ec2Spot    
     cores: 1
     instances: 10
     memory: "5G"
