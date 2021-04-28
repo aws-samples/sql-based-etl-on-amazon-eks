@@ -15,7 +15,8 @@
 const fs = require('fs');
 
 // Paths
-const global_s3_assets = '../global-s3-assets';
+var currentPath = process.cwd();
+const global_s3_assets = currentPath+'/../deployment/global-s3-assets';
 function setParameter(template) {
     const parameters = (template.Parameters) ? template.Parameters : {};
     const assetParameters = Object.keys(parameters).filter(function(key) {
@@ -30,16 +31,17 @@ function setParameter(template) {
     });
     rule.forEach(function(a) {
       template.Rules[a] = undefined;
-  });
-};
+  })
+}
+
 function assetRef(s3BucketRef) {
   // Get the S3 bucket key references from assets file
     const raw_meta = fs.readFileSync(`${global_s3_assets}/SparkOnEKS.assets.json`);
     let template = JSON.parse(raw_meta);
     const metadata = (template.files[s3BucketRef]) ? template.files[s3BucketRef] : {};
-    assetPath = metadata.source.path.replace('.json','');
+    var assetPath = metadata.source.path.replace('.json','');
     return assetPath;
-};
+}
 
 // For each template in global_s3_assets ...
 fs.readdirSync(global_s3_assets).forEach(file => {
@@ -61,7 +63,7 @@ fs.readdirSync(global_s3_assets).forEach(file => {
       const fn = template.Resources[f];
       if (fn.Properties.hasOwnProperty('AvailabilityZone') && fn.Properties.AvailabilityZone.includes('dummy1')) {
         fn.Properties.AvailabilityZone = {'Fn::Sub': '${AWS::Region}'+fn.Properties.AvailabilityZone.replace('dummy1','')};
-      };
+      }
     });
 
     //3. Clean-up VPC endpoint region
@@ -75,19 +77,19 @@ fs.readdirSync(global_s3_assets).forEach(file => {
             "Fn::Join": ["",["com.amazonaws.",{"Ref": "AWS::Region"},".",
                 fn.Properties.ServiceName.split('.').slice(3).join('.')
             ]]
-        }};
+        }}
     });
 
     //4. Clean-up S3 bucket dependencies
-    const replaceS3Bucket = Object.keys(resources).filter(function(key) {
-      return (resources[key].Type === "AWS::Lambda::Function" || resources[key].Type === "AWS::Lambda::LayerVersion" || resources[key].Type === "Custom::CDKBucketDeployment" || resources[key].Type === "AWS::CloudFormation::Stack" || resources[key].Type === "AWS::IAM::Policy" || resources[key].Type === "AWS::IAM::Role");
+    const replaceInfra = Object.keys(resources).filter(function(key) {
+      return (resources[key].Type === "AWS::Lambda::Function" || resources[key].Type === "AWS::Lambda::LayerVersion" || resources[key].Type === "Custom::CDKBucketDeployment" || resources[key].Type === "AWS::CloudFormation::Stack" || resources[key].Type === "AWS::IAM::Policy" || resources[key].Type === "AWS::IAM::Role" || resources[key].Type === "AWS::KMS::Key");
     });
-    replaceS3Bucket.forEach(function(f) {
+    replaceInfra.forEach(function(f) {
         const fn = template.Resources[f];
         if (fn.Properties.hasOwnProperty('Code') && fn.Properties.Code.hasOwnProperty('S3Bucket')) {
           // Set Lambda::Function S3 bucket reference
           fn.Properties.Code.S3Key = `%%SOLUTION_NAME%%/%%VERSION%%/asset`+fn.Properties.Code.S3Key;
-          fn.Properties.Code.S3Bucket = {'Fn::Sub': '%%BUCKET_NAME%%'};
+          fn.Properties.Code.S3Bucket = {'Fn::Sub': '%%BUCKET_NAME%%-${AWS::Region}'};
           // Set the handler
           const handler = fn.Properties.Handler;
           fn.Properties.Handler = `${handler}`;
@@ -95,35 +97,35 @@ fs.readdirSync(global_s3_assets).forEach(file => {
         else if (fn.Properties.hasOwnProperty('Content') && fn.Properties.Content.hasOwnProperty('S3Bucket')) {
           // Set Lambda::LayerVersion S3 bucket reference
           fn.Properties.Content.S3Key = `%%SOLUTION_NAME%%/%%VERSION%%/asset`+fn.Properties.Content.S3Key;
-          fn.Properties.Content.S3Bucket = {'Fn::Sub': '%%BUCKET_NAME%%'};    
+          fn.Properties.Content.S3Bucket = {'Fn::Sub': '%%BUCKET_NAME%%-${AWS::Region}'};    
         }
         else if (fn.Properties.hasOwnProperty('SourceBucketNames')) {
           // Set CDKBucketDeployment S3 bucket reference
           fn.Properties.SourceObjectKeys = [`%%SOLUTION_NAME%%/%%VERSION%%/asset`+fn.Properties.SourceObjectKeys[0]];
-          fn.Properties.SourceBucketNames = [{'Fn::Sub': '%%BUCKET_NAME%%'}];
+          fn.Properties.SourceBucketNames = [{'Fn::Sub': '%%BUCKET_NAME%%-${AWS::Region}'}];
         }
         else if (fn.Properties.hasOwnProperty('PolicyName') && fn.Properties.PolicyName.includes('CustomCDKBucketDeployment')) {
           // Set CDKBucketDeployment S3 bucket Policy reference
           fn.Properties.PolicyDocument.Statement.forEach(function(sub,i) {
             sub.Resource.forEach(function(resource){
-              arrayKey = Object.keys(resource);
+              var arrayKey = Object.keys(resource);
               if (typeof(resource[arrayKey][1]) === 'object') {
-                resource[arrayKey][1].filter(function(key){
-                    if (key.hasOwnProperty('Ref')) {
+                resource[arrayKey][1].filter(function(s){
+                    if (s.hasOwnProperty('Ref')) {
                       fn.Properties.PolicyDocument.Statement[i].Resource = [
-                      {"Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},":s3:::%%BUCKET_NAME%%"]]},
-                      {"Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},":s3:::%%BUCKET_NAME%%/*"]]}
+                      {"Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},":s3:::%%BUCKET_NAME%%-",{"Ref": "AWS::Region"}]]},
+                      {"Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},":s3:::%%BUCKET_NAME%%-",{"Ref": "AWS::Region"},"/*"]]}
                       ]
-                    };
+                    }
                   });
-                };
+                }
               });
             });
         }
         else if (fn.Properties.hasOwnProperty('TemplateURL')) {
           // Set NestedStack S3 bucket reference
-          key=fn.Properties.TemplateURL['Fn::Join'][1][2].split('/')[2].replace('.json','');
-          assetPath = assetRef(key);
+          var key=fn.Properties.TemplateURL['Fn::Join'][1][2].split('/')[2].replace('.json','');
+          var assetPath = assetRef(key);
           fn.Properties.TemplateURL = {
             'Fn::Join': [
               '',

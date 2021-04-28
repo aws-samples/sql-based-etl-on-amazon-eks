@@ -10,13 +10,8 @@ from os import environ
 
 app = core.App()
 
-# Get environment vars from deployment/enviornment.cfg file, run 'cdk synth -c env=develop'
-
-# target_env = app.node.try_get_context('env')
-# account = ConfigSectionMap(target_env)['account']
-# region = ConfigSectionMap(target_env)['region']
-# env = core.Environment(account=account, region=region)
-eks_name = app.node.try_get_context('cluster_name') ## + '-' + ConfigSectionMap(target_env)['env_str']
+# Get environment vars
+eks_name = app.node.try_get_context('cluster_name')
 env=core.Environment(account=environ.get("CDK_DEPLOY_ACCOUNT", environ["CDK_DEFAULT_ACCOUNT"]),
                     region=environ.get("AWS_REGION", environ["CDK_DEFAULT_REGION"]))
 

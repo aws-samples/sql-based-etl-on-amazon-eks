@@ -6,16 +6,16 @@ from aws_cdk import (
     aws_eks as eks,
     aws_secretsmanager as secmger
 )
-from bin.network_sg import NetworkSgConst
-from bin.iam_roles import IamConst
-from bin.eks_cluster import EksConst
-from bin.eks_service_account import EksSAConst
-from bin.eks_base_app import EksBaseAppConst
-from bin.s3_app_code import S3AppCodeConst
-from bin.spark_permission import SparkOnEksSAConst
+from lib.cdk_infra.network_sg import NetworkSgConst
+from lib.cdk_infra.iam_roles import IamConst
+from lib.cdk_infra.eks_cluster import EksConst
+from lib.cdk_infra.eks_service_account import EksSAConst
+from lib.cdk_infra.eks_base_app import EksBaseAppConst
+from lib.cdk_infra.s3_app_code import S3AppCodeConst
+from lib.cdk_infra.spark_permission import SparkOnEksSAConst
 from lib.cloud_front_stack import NestedStack
-from bin.manifest_reader import *
-import json
+from lib.util.manifest_reader import *
+import json,os
 
 class SparkOnEksStack(core.Stack):
 
@@ -33,6 +33,8 @@ class SparkOnEksStack(core.Stack):
 
     def __init__(self, scope: core.Construct, id: str, eksname: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
+
+        source_dir=os.path.split(os.environ['VIRTUAL_ENV'])[0]+'/source'
 
         # Cloudformation input params
         datalake_bucket = core.CfnParameter(self, "datalakebucket", type="String",
@@ -78,11 +80,11 @@ class SparkOnEksStack(core.Stack):
             release='argo',
             namespace='argo',
             create_namespace=True,
-            values=loadYamlLocal('../app_resources/argo-values.yaml')
+            values=loadYamlLocal(source_dir+'/app_resources/argo-values.yaml')
         )
         # Create a Spark workflow template with different T-shirt size
         submit_tmpl = eks_cluster.my_cluster.add_manifest('SubmitSparkWrktmpl',
-            loadYamlLocal('../app_resources/spark-template.yaml')
+            loadYamlLocal(source_dir+'/app_resources/spark-template.yaml')
         )
         submit_tmpl.node.add_dependency(argo_install)
 
@@ -94,7 +96,7 @@ class SparkOnEksStack(core.Stack):
             version='0.11.1',
             namespace='jupyter',
             create_namespace=False,
-            values=loadYamlReplaceVarLocal('../app_resources/jupyter-values.yaml', 
+            values=loadYamlReplaceVarLocal(source_dir+'/app_resources/jupyter-values.yaml', 
                 fields={
                     "{{codeBucket}}": self.app_s3.code_bucket,
                     "{{region}}": self.region 
@@ -107,7 +109,7 @@ class SparkOnEksStack(core.Stack):
 
         config_hub = eks.KubernetesManifest(self,'JHubConfig',
             cluster=eks_cluster.my_cluster,
-            manifest=loadYamlReplaceVarLocal('../app_resources/jupyter-config.yaml', 
+            manifest=loadYamlReplaceVarLocal(source_dir+'/app_resources/jupyter-config.yaml', 
                 fields= {
                     "{{MY_SA}}": app_security.jupyter_sa,
                     "{{REGION}}": self.region, 

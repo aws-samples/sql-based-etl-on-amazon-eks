@@ -6,16 +6,14 @@ from aws_cdk import (
     aws_ec2 as ec2
 )
 from aws_cdk.aws_eks import ICluster, KubernetesManifest
-from bin.manifest_reader import *
+from lib.util.manifest_reader import *
+import os
 
 class EksBaseAppConst(core.Construct):
-    def __init__(self,scope: core.Construct, id: str, 
-    eks_cluster: ICluster, 
-    region: str, 
-    # efs_sg: ec2.ISecurityGroup, 
-    **kwargs,) -> None:
+    def __init__(self,scope: core.Construct, id: str, eks_cluster: ICluster, region: str, **kwargs,) -> None:
         super().__init__(scope, id, **kwargs)
 
+        source_dir=os.path.split(os.environ['VIRTUAL_ENV'])[0]+'/source'
         # Add Cluster Autoscaler to EKS
         _var_mapping = {
             "{{region_name}}": region, 
@@ -27,7 +25,7 @@ class EksBaseAppConst(core.Construct):
             release='nodescaler',
             create_namespace=False,
             namespace='kube-system',
-            values=loadYamlReplaceVarLocal('../app_resources/autoscaler-values.yaml',_var_mapping)
+            values=loadYamlReplaceVarLocal(source_dir+'/app_resources/autoscaler-values.yaml',_var_mapping)
         )
 
         # Add container insight (CloudWatch Log) to EKS
@@ -46,7 +44,7 @@ class EksBaseAppConst(core.Construct):
             release='alb',
             create_namespace=False,
             namespace='kube-system',
-            values=loadYamlReplaceVarLocal('../app_resources/alb-values.yaml',
+            values=loadYamlReplaceVarLocal(source_dir+'/app_resources/alb-values.yaml',
                 fields={
                     "{{region_name}}": region, 
                     "{{cluster_name}}": eks_cluster.cluster_name, 
@@ -62,7 +60,7 @@ class EksBaseAppConst(core.Construct):
             release='external-secrets',
             create_namespace=False,
             namespace='kube-system',
-            values=loadYamlReplaceVarLocal('../app_resources/ex-secret-values.yaml',
+            values=loadYamlReplaceVarLocal(source_dir+'/app_resources/ex-secret-values.yaml',
                 fields={
                     '{{region_name}}': region
                 }
@@ -76,7 +74,7 @@ class EksBaseAppConst(core.Construct):
             release='spark-operator',
             create_namespace=True,
             namespace='spark-operator',
-            values=loadYamlReplaceVarLocal('../app_resources/spark-operator-values.yaml',fields={'':''})
+            values=loadYamlReplaceVarLocal(source_dir+'/app_resources/spark-operator-values.yaml',fields={'':''})
         )
 
         # # Add Metric Server for Horizontal Pod Autoscaller

@@ -6,7 +6,7 @@ from aws_cdk import (
     aws_s3 as s3,
     aws_s3_deployment as s3deploy
 )
-from os import path
+import os
 
 class S3AppCodeConst(core.Construct):
 
@@ -26,9 +26,9 @@ class S3AppCodeConst(core.Construct):
             # server_access_logs_prefix="bucketAccessLog",
             access_control = s3.BucketAccessControl.LOG_DELIVERY_WRITE
         )  
-        code_path=path.dirname(path.abspath(__file__))
+        source_dir=os.path.split(os.environ['VIRTUAL_ENV'])[0]
         s3deploy.BucketDeployment(self, "DeployCode",
-            sources=[s3deploy.Source.asset(code_path+"/../../deployment/app_code")],
+            sources=[s3deploy.Source.asset(source_dir+'/deployment/app_code')],
             destination_bucket= artifact_bucket,
             destination_key_prefix="app_code"
         )

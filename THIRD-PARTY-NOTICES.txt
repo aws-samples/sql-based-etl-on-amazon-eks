@@ -1,4 +1,14 @@
-** cdk-solution-init-pkg; version 1.0.0 -- https://aws.amazon.com/solutions/
+** cdk-solution-init-pkg; version 1.0.0 -- https://aws.amazon.com/solutions/ -- Apahe-2.0
+** Arc -- v3.8.2_spark_3.0.2_scala_2.12_hadoop_3.2.0_1.2.0 -- https://arc.tripl.ai/ -- MIT License
+** Arc Jupyter - v3.12.1_scala_2.12_hadoop_3.2.0_1.5.0 -- https://github.com/tripl-ai/arc-jupyter --  MIT License
+** argo -- v2.12.5 -- https://github.com/argoproj/argo-helm -- Apache-2.0
+** ** JupyterHub -- v0.11.1 -- https://jupyterhub.github.io/helm-chart/ -- revised BSD license
+aws-cdk -- v1.96.0 -- https://github.com/aws/aws-cdk -- Apache-2.0
+** k8s-cluster-autoscaler -- v1.18.2 -- https://github.com/kubernetes/autoscaler -- Apache-2.0
+** amazon-cloudwatch-container-insights -- latest version -- https://github.com/aws-samples/amazon-cloudwatch-container-insights -- MIT-0
+** aws-load-balancer-controller -- v2.1.3 -- https://github.com/aws/eks-charts/ -- Apache-2.0
+** kubernetes-external-secrets -- v7.2.0 -- https://github.com/external-secrets/kubernetes-external-secrets -- MIT License
+spark-on-k8s-operator -- v1beta2-1.2.0-3.0.0 -- https://github.com/GoogleCloudPlatform/spark-on-k8s-operator -- Apache-2.0
 
 Apache License
 
