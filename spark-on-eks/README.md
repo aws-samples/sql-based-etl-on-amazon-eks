@@ -181,9 +181,9 @@ SELECT * FROM default.contact_snapshot WHERE id=12
 ``` 
 
 [*^ back to top*](#Table-of-Contents)
-### Native Spark job
+### Submit native Spark job with Spark operator
 
-Reuse the Arc docker image to run a native Spark application, defined by k8s's CRD [Spark Operator](https://operatorhub.io/operator/spark-gcp). It saves efforts on DevOps operation, as the way of deploying Spark application follows the same declarative approach in k8s. It is consistent with other business applications CICD deployment processes.
+Reuse the Arc docker image (Spark 3.0.2) to run a native Spark application, defined by k8s's CRD [Spark Operator](https://operatorhub.io/operator/spark-gcp). It saves efforts on DevOps operation, as the way of deploying Spark application follows the same declarative approach in k8s. It is consistent with other business applications CICD deployment processes.
   The example demonstrates:
   * Save cost with [Amazon EC2 Spot instance](https://aws.amazon.com/ec2/spot/) type
   * Dynamically scale a Spark application - via [Dynamic Resource Allocation](https://spark.apache.org/docs/3.0.0-preview/job-scheduling.html#dynamic-resource-allocation)
@@ -192,17 +192,16 @@ Reuse the Arc docker image to run a native Spark application, defined by k8s's C
 
 [*^ back to top*](#Table-of-Contents)
 #### Submit job by kubectl
-* Execute the command in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/).
+* Execute the command in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/). Replace the codeBucket placeholder by your S3 bucket found on the [CloudFormation Output](https://console.aws.amazon.com/cloudformation/home?region=us-east-1). Then submit the job to EKS.
 ```bash
 kubectl create -n spark configmap special-config --from-literal=codeBucket=<your_codeBucket_name>
 kubectl apply -f https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/spark-on-eks/source/example/native-spark-job-scheduler.yaml
 
+# OR submit the job from your computer
+kubectl apply -f source/example/native-spark-job-scheduler.yaml
+
 # watch the progress in EKS
 kubectl get pod -n spark
-
-# modify the schedule file locally if you like, then rerun
-kubectl delete -f source/example/native-spark-job-scheduler.yaml
-kubectl apply -f source/example/native-spark-job-scheduler.yaml
 
 # watch job progress on SparkUI
 kubectl port-forward word-count-driver 4040:4040 -n spark
@@ -211,31 +210,40 @@ kubectl port-forward word-count-driver 4040:4040 -n spark
 
 [*^ back to top*](#Table-of-Contents)
 #### Self-recovery test
-In a Spark cluster, driver is the single point of failure. If driver dies, all other linked components will be discarded too. Outside of k8s, it requires extra effort to set up a job rerun mechanism, in order to provide the fault tolerant, however It is much simpler in EKS. 
+In Spark, driver is a single point of failure in data processing. If driver dies, all other linked components will be discarded too. Outside of Kubernetes, it requires extra effort to set up a job rerun, in order to provide the fault tolerance capability, however It is much simpler in Amazon EKS. 
 
-* The native Spark job takes approx. 10 minutes to finish. Let's test out the fault tolerance capbility by killing the driver first: 
+The native Spark job takes approx. 10 minutes to finish. Let's test the self-recovery against the running Spark cluster.
 
+* Firstly, manually kill the EC2 instance running the Spark driver:
 ```bash
-kubectl delete pod -n spark word-count-driver --force
-# has the driver come back instantly?
-kubectl get po -n spark
+Kubectl describe pod word-count-driver -n spark
+# delete the EC2 server found in the description
+kubectl delete node <ec2_host_name>
+# Did your driver come back in seconds?
+kubectl get pod -n spark
+
 ```
-* Now delete one of executors: 
+See the demonstration below, which simulates the Spot interruption scenario: 
+![](/spark-on-eks/images/driver_interruption_test.gif)
+
+* Now kill one of executors: 
 
 ```bash
 # replace the example pod name by yours
 kubectl delete -n spark pod <example:amazon-reviews-word-count-51ac6d777f7cf184-exec-1> --force
 # has it come back with a different number suffix? 
-kubectl get po -n spark
+kubectl get pod -n spark
 ```
 
 [*^ back to top*](#Table-of-Contents)
 #### Check Spot instance usage and cost savings
 Go to [Spot Request console](https://console.aws.amazon.com/ec2sp/v2/) -> Saving Summary, to find out how much running cost you just saved.
 
-#### Explore Other features: Auto Scaling across Multi-AZ, and Spark's Dynamic Allocation support
+#### Autoscaling across Multi-AZ, and Spark's Dynamic Allocation support
 
-This job will end up with 20 Spark executors/pods on around 7 spot EC2 instances. It takes 10 minutes to complete. Based on the resource allocation defined in the job manifest file, it runs approx. 3 executors per EC2 spot instance. As soon as the job is kicked in, you will see the autoscaling is triggered within seconds. It scales the Spark cluster from 0 to 10 executors, then reduce to 3 executor as only 1 spot node in the EKS intially. Eventualy, the Spark cluster will scale to 20 executors, driven by the DynamicAllocation capability in Spark.
+The job ends up with 20 Spark executors/pods on 7 spot EC2 instances. It takes 10 minutes to complete. Based on the resource allocation defined by the job manifest file, it runs approx. 3 executors per EC2 spot instance. 
+
+Once the job is kicked in, you will see the autoscaling is triggered within seconds. It scales the Spark cluster from 0 to 10 executors. Eventually, the Spark cluster scales to 20 executors, driven by the DynamicAllocation capability in Spark.
 
 The auto-scaling is configured to be balanced within two AZs. Depending on your business requirement, you can fit the ETL job into a single AZ if needed.
 
@@ -255,10 +263,13 @@ kubectl get pod -n spark
 
 [*^ back to top*](#Table-of-Contents)
 ## Clean up
-Go to the repo's root directory, and run the clean up script. 
-If it fails, manually delete resources from the CloudFormation console.
+Go to the repo's root directory, and run the clean-up script. 
 
 ```bash
 cd sql-based-etl-on-amazon-eks/spark-on-eks
 ./deployment/delete_all.sh
 ```
+Follow the instruction below to delete the remaining resources on the AWS management console if needed.
+1.  Sign in to the AWS CloudFormation console. 
+2.  Select this solution’s installation stack called SparkOnEKS.
+3.  Choose Delete.

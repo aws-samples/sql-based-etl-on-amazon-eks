@@ -8,7 +8,7 @@ aws-cdk -- v1.96.0 -- https://github.com/aws/aws-cdk -- Apache-2.0
 ** amazon-cloudwatch-container-insights -- latest version -- https://github.com/aws-samples/amazon-cloudwatch-container-insights -- MIT-0
 ** aws-load-balancer-controller -- v2.1.3 -- https://github.com/aws/eks-charts/ -- Apache-2.0
 ** kubernetes-external-secrets -- v7.2.0 -- https://github.com/external-secrets/kubernetes-external-secrets -- MIT License
-spark-on-k8s-operator -- v1beta2-1.2.0-3.0.0 -- https://github.com/GoogleCloudPlatform/spark-on-k8s-operator -- Apache-2.0
+** spark-on-k8s-operator -- v1beta2-1.2.0-3.0.0 -- https://github.com/GoogleCloudPlatform/spark-on-k8s-operator -- Apache-2.0
 
 Apache License
 
