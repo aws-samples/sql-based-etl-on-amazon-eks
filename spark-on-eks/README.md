@@ -17,11 +17,11 @@ A project for a solution - SQL based ETL with a declarative framework powered by
   * [Arc ETL job](#Arc-ETL-job)
     * [Submit job on Argo UI](#Submit-job-on-Argo-UI)
     * [Submit job by Argo CLI](#Submit-job-by-Argo-CLI)
-  * [Native Spark job](#Native-Spark-job)
+  * [Native Spark job](#submit-native-Spark-job-with-spark-operator)
     * [Submit job by kubectl](#Submit-job-by-kubectl)
     * [Self-recovery test](#Self-recovery-test)
     * [Cost savings with spot instance](#Check-Spot-instance-usage-and-cost-savings)
-    * [Auto scaling & Dynamic resource allocation](#Explore-EKS-features-Auto-Scaling-across-Multi-AZ-and-Spark's-Dynamic-Allocation-support)
+    * [Auto scaling & Dynamic resource allocation](#Autoscaling---dynamic-allocation-support)
 * [Useful Commands](#Useful-Commands)  
 * [Clean Up](#clean-up)
 
@@ -239,7 +239,7 @@ kubectl get pod -n spark
 #### Check Spot instance usage and cost savings
 Go to [Spot Request console](https://console.aws.amazon.com/ec2sp/v2/) -> Saving Summary, to find out how much running cost you just saved.
 
-#### Autoscaling across Multi-AZ, and Spark's Dynamic Allocation support
+#### Autoscaling & Dynamic Allocation support
 
 The job ends up with 20 Spark executors/pods on 7 spot EC2 instances. It takes 10 minutes to complete. Based on the resource allocation defined by the job manifest file, it runs approx. 3 executors per EC2 spot instance. 
 
