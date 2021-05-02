@@ -1,15 +1,16 @@
-/**
- *  Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
- *  with the License. A copy of the License is located at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES
- *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions
- *  and limitations under the License.
- */
+#!/usr/bin/env node
+/**********************************************************************************************************************
+ *  Copyright 2020-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                      *
+ *                                                                                                                    *
+ *  Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance    *
+ *  with the License. A copy of the License is located at                                                             *
+ *                                                                                                                    *
+ *      http://www.apache.org/licenses/LICENSE-2.0                                                                    *
+ *                                                                                                                    *
+ *  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES *
+ *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    *
+ *  and limitations under the License.                                                                                *
+ *********************************************************************************************************************/
 
 // Imports
 const fs = require('fs');
@@ -17,6 +18,8 @@ const fs = require('fs');
 // Paths
 var currentPath = process.cwd();
 const global_s3_assets = currentPath+'/../deployment/global-s3-assets';
+const solution_name='SparkOnEKS';
+
 function setParameter(template) {
     const parameters = (template.Parameters) ? template.Parameters : {};
     const assetParameters = Object.keys(parameters).filter(function(key) {
@@ -33,10 +36,23 @@ function setParameter(template) {
       template.Rules[a] = undefined;
   })
 }
+function setOutput(template) {
+  const outputs = (template.Outputs) ? template.Outputs : {};
+  const output=Object.keys(outputs).filter(function(key){
+    if(typeof(outputs[key].Value["Fn::Join"]) === 'object' && typeof(outputs[key].Value["Fn::Join"][1][0]) === 'string'){
+      return(outputs[key].Value["Fn::Join"][1][0].startsWith('aws eks'))
+    }
+  })
+  output.forEach(i => 
+    template.Outputs[i].Value={
+      "Fn::Join": ["",[outputs[i].Value["Fn::Join"][1][0],outputs[i].Value["Fn::Join"][1][1],
+      " --region ",{"Ref": "AWS::Region"}," --role-arn ",outputs[i].Value["Fn::Join"][1][3]]]
+    })
+}
 
 function assetRef(s3BucketRef) {
-  // Get the S3 bucket key references from assets file
-    const raw_meta = fs.readFileSync(`${global_s3_assets}/SparkOnEKS.assets.json`);
+  // Get S3 bucket key references from assets file
+    const raw_meta = fs.readFileSync(`${global_s3_assets}/${solution_name}.assets.json`);
     let template = JSON.parse(raw_meta);
     const metadata = (template.files[s3BucketRef]) ? template.files[s3BucketRef] : {};
     var assetPath = metadata.source.path.replace('.json','');
@@ -45,14 +61,14 @@ function assetRef(s3BucketRef) {
 
 // For each template in global_s3_assets ...
 fs.readdirSync(global_s3_assets).forEach(file => {
-
-  if ( file != 'SparkOnEKS.assets.json') {
+  if ( file != `${solution_name}.assets.json`) {
     // Import and parse template file
     const raw_template = fs.readFileSync(`${global_s3_assets}/${file}`);
     let template = JSON.parse(raw_template);
 
     //1. Clean-up parameters section
     setParameter(template);
+    setOutput(template);
 
     const resources = (template.Resources) ? template.Resources : {};
     //2. Clean-up subnet region
@@ -80,11 +96,12 @@ fs.readdirSync(global_s3_assets).forEach(file => {
         }}
     });
 
-    //4. Clean-up S3 bucket dependencies
-    const replaceInfra = Object.keys(resources).filter(function(key) {
-      return (resources[key].Type === "AWS::Lambda::Function" || resources[key].Type === "AWS::Lambda::LayerVersion" || resources[key].Type === "Custom::CDKBucketDeployment" || resources[key].Type === "AWS::CloudFormation::Stack" || resources[key].Type === "AWS::IAM::Policy" || resources[key].Type === "AWS::IAM::Role" || resources[key].Type === "AWS::KMS::Key");
+    //4. Clean-up Account ID and region to enable cross account deployment
+    const rsrctype=["AWS::Lambda::Function","AWS::Lambda::LayerVersion","Custom::CDKBucketDeployment", "AWS::CloudFormation::Stack","AWS::IAM::Policy","AWS::IAM::Role","AWS::KMS::Key","Custom::AWSCDK-EKS-HelmChart","Custom::AWSCDK-EKS-KubernetesResource"] 
+    const focusTemplate = Object.keys(resources).filter(function(key) {
+      return (resources[key].Type.indexOf(rsrctype) < 0)
     });
-    replaceInfra.forEach(function(f) {
+    focusTemplate.forEach(function(f) {
         const fn = template.Resources[f];
         if (fn.Properties.hasOwnProperty('Code') && fn.Properties.Code.hasOwnProperty('S3Bucket')) {
           // Set Lambda::Function S3 bucket reference
@@ -122,27 +139,16 @@ fs.readdirSync(global_s3_assets).forEach(file => {
               });
             });
         }
+        // Set NestedStack S3 bucket reference
         else if (fn.Properties.hasOwnProperty('TemplateURL')) {
-          // Set NestedStack S3 bucket reference
           var key=fn.Properties.TemplateURL['Fn::Join'][1][2].split('/')[2].replace('.json','');
           var assetPath = assetRef(key);
           fn.Properties.TemplateURL = {
-            'Fn::Join': [
-              '',
-              [
-                  'https://s3.',
-                  {
-                      'Ref' : 'AWS::URLSuffix'
-                  },
-                  '/',
-                  `%%TEMPLATE_OUTPUT_BUCKET%%/%%SOLUTION_NAME%%/%%VERSION%%/${assetPath}`
-              ]
-          ]
+            'Fn::Join': ['',['https://s3.',{'Ref' : 'AWS::URLSuffix'},'/',`%%TEMPLATE_OUTPUT_BUCKET%%/%%SOLUTION_NAME%%/%%VERSION%%/${assetPath}`]]
           };
         }
-        //5. Clean-up Account ID and region from EKS IAM roles
+        // reset EKS creation policy
         else if (fn.Metadata['aws:cdk:path'].includes('EKS/Resource/CreationRole') && fn.Properties.hasOwnProperty('PolicyDocument')){
-          // reset EKS creation policy
           fn.Properties.PolicyDocument.Statement.forEach(function(sub,i) {
             if (typeof(sub.Resource['Fn::Join']) === 'object') {
               fn.Properties.PolicyDocument.Statement[i].Resource={
@@ -153,35 +159,108 @@ fs.readdirSync(global_s3_assets).forEach(file => {
               };
             }
             else if (typeof(sub.Resource[0]) === 'object') {
-                fn.Properties.PolicyDocument.Statement[i].Resource=[
-                  {
-                    "Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},
-                    ":eks:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},
-                      ":",sub.Resource[0]['Fn::Join'][1][2].split(':').pop()]]
-                  },
-                  {
+              fn.Properties.PolicyDocument.Statement[i].Resource=[
+                {
                   "Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},
                   ":eks:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},
-                    ":",sub.Resource[1]['Fn::Join'][1][2].split(':').pop()]] 
-                  }] 
-                };
+                    ":",sub.Resource[0]['Fn::Join'][1][2].split(':').pop()]]
+                },
+                {
+                "Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},
+                ":eks:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},
+                  ":",sub.Resource[1]['Fn::Join'][1][2].split(':').pop()]] 
+                }] 
+              }
             });
         }
-        // reset EKS roles
+        // reset IAM assume roles
         else if (fn.Properties.hasOwnProperty('AssumeRolePolicyDocument')){
-          if (fn.Metadata['aws:cdk:path'].includes('SparkOnEKS/iam_roles/clusterAdmin') || fn.Metadata['aws:cdk:path'].includes('EKS/Resource/CreationRole')){
-            fn.Properties.AssumeRolePolicyDocument.Statement.forEach(function(sub,i){
-              if (sub.Principal.hasOwnProperty('AWS') && typeof(sub.Principal.AWS['Fn::Join']) === 'object'){
-                fn.Properties.AssumeRolePolicyDocument.Statement[i].Principal.AWS={
-                 "Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},":iam::",{"Ref": "AWS::AccountId"},":root"]]
-                }}
-            });
-          };
-        };  
+          const metadata=["iam_roles/clusterAdmin","EKS/Resource/CreationRole","S3Trigger/CodePipelineActionRole","DockerImageBuild/CodePipelineActionRole","waiter-state-machine/Role"]
+          metadata.forEach(function (i){
+            if (fn.Metadata['aws:cdk:path'].includes(i)){
+              fn.Properties.AssumeRolePolicyDocument.Statement.forEach(function(sub,i){
+                if (sub.Principal.hasOwnProperty('AWS') && typeof(sub.Principal.AWS['Fn::Join']) === 'object'){
+                  fn.Properties.AssumeRolePolicyDocument.Statement[i].Principal.AWS={
+                   "Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},":iam::",{"Ref": "AWS::AccountId"},":root"]]
+                  }}
+                else {
+                  fn.Properties.AssumeRolePolicyDocument.Statement[i].Principal.Service={
+                    "Fn::Join": ["",["states.",{"Ref": "AWS::Region"},".amazonaws.com"]]
+                }}  
+              });
+            }
+          })
+        }
+        // Set KMS key policy pincipal   
+        else if (fn.Properties.hasOwnProperty('KeyPolicy')) { 
+          fn.Properties.KeyPolicy.Statement.forEach(function(sub,i){
+            if (sub.Principal.hasOwnProperty('AWS') && typeof(sub.Principal.AWS['Fn::Join']) === 'object'){
+                fn.Properties.KeyPolicy.Statement[i].Principal.AWS={
+                  "Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},":iam::",{"Ref": "AWS::AccountId"},":root"]]
+            }}
+            if (sub.hasOwnProperty('Condition') && typeof(sub.Condition.StringEquals['kms:ViaService']) === 'string'){
+                fn.Properties.KeyPolicy.Statement[i].Condition.StringEquals['kms:ViaService']={
+                  "Fn::Join": ["",["secretsmanager.",{"Ref": "AWS::Region"},".amazonaws.com"]]
+            }}
+          });
+        }
+        // Set codebuild defualt policy
+        else if (fn.Properties.hasOwnProperty('PolicyName') && fn.Properties.PolicyName.includes('imageDockerBuildRoleDefaultPolicy')){      
+          fn.Properties.PolicyDocument.Statement.forEach(function(sub,i) {
+            if (typeof(sub.Resource['Fn::Join']) === 'object') {
+              fn.Properties.PolicyDocument.Statement[i].Resource={
+                "Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},
+                ":codebuild:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":report-group/",
+                sub.Resource['Fn::Join'][1][3],"-*"
+              ]]};
+
+            }
+            else if (typeof(sub.Resource[0]) === 'object') {
+              sub.Resource.forEach(function(resource){
+                if (typeof(resource['Fn::Join']) === 'object' && resource['Fn::Join'][1][1].hasOwnProperty('Ref')){
+                  fn.Properties.PolicyDocument.Statement[i].Resource=[{
+                    "Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},
+                    ":logs:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":log-group:/aws/codebuild/",
+                    resource['Fn::Join'][1][3]]]
+                  },
+                  {
+                    "Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},
+                    ":logs:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":log-group:/aws/codebuild/",
+                    resource['Fn::Join'][1][3],":*"]]
+                  }]
+                }})}
+            })
+          }
+          // Set CloudFront logging bucket
+          else if (fn.Properties.hasOwnProperty('DistributionConfig')){
+            fn.Properties.DistributionConfig.Logging.Bucket= {
+              "Fn::Join": ["",[fn.Properties.DistributionConfig.Logging.Bucket['Fn::Join'][1][0],
+              ".s3.",{"Ref": "AWS::Region"},".",{"Ref": "AWS::URLSuffix"}]]
+            }
+          }
+          // Set region in JupyterHub
+          else if (fn.Properties.Release ==='jhub'){
+            var array = fn.Properties.Values["Fn::Join"][1];
+            var region_array = array[2].split("ETL_CONF_AWS_REGION")[1].split(",");
+            region_array.shift();
+            fn.Properties.Values = {"Fn::Join": ["",[
+              array[0],array[1],
+              "\",\"ETL_CONF_AWS_REGION\":\"",{"Ref": "AWS::Region"},"\"},",region_array.toString()]]
+            }
+          }
+          else if (fn.Metadata['aws:cdk:path'].includes('JHubConfig/Resource')){
+            var array = fn.Properties.Manifest["Fn::Join"][1];
+            var region_array=array[4].split("region")[1].split(",");
+            region_array.shift();
+            fn.Properties.Manifest = {"Fn::Join": ["",[
+              array[0],array[1],array[2],array[3],
+              array[4].split("region")[0],"region\":\"",{"Ref": "AWS::Region"},"\",",region_array.toString(),array[5],array[6]]]
+            }
+          }
     });
     
     //6. Output modified template file
     const output_template = JSON.stringify(template, null, 2);
     fs.writeFileSync(`${global_s3_assets}/${file}`, output_template);
-  }; 
+  }
 });
