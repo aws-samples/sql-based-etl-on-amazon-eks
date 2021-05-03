@@ -106,7 +106,7 @@ fs.readdirSync(global_s3_assets).forEach(file => {
         if (fn.Properties.hasOwnProperty('Code') && fn.Properties.Code.hasOwnProperty('S3Bucket')) {
           // Set Lambda::Function S3 bucket reference
           fn.Properties.Code.S3Key = `%%SOLUTION_NAME%%/%%VERSION%%/asset`+fn.Properties.Code.S3Key;
-          fn.Properties.Code.S3Bucket = {'Fn::Sub': '%%BUCKET_NAME%%'};
+          fn.Properties.Code.S3Bucket = {'Fn::Sub': '%%BUCKET_NAME%%-${AWS::Region}'};
           // Set the handler
           const handler = fn.Properties.Handler;
           fn.Properties.Handler = `${handler}`;
@@ -114,12 +114,12 @@ fs.readdirSync(global_s3_assets).forEach(file => {
         else if (fn.Properties.hasOwnProperty('Content') && fn.Properties.Content.hasOwnProperty('S3Bucket')) {
           // Set Lambda::LayerVersion S3 bucket reference
           fn.Properties.Content.S3Key = `%%SOLUTION_NAME%%/%%VERSION%%/asset`+fn.Properties.Content.S3Key;
-          fn.Properties.Content.S3Bucket = {'Fn::Sub': '%%BUCKET_NAME%%'};    
+          fn.Properties.Content.S3Bucket = {'Fn::Sub': '%%BUCKET_NAME%%-${AWS::Region}'};    
         }
         else if (fn.Properties.hasOwnProperty('SourceBucketNames')) {
           // Set CDKBucketDeployment S3 bucket reference
           fn.Properties.SourceObjectKeys = [`%%SOLUTION_NAME%%/%%VERSION%%/asset`+fn.Properties.SourceObjectKeys[0]];
-          fn.Properties.SourceBucketNames = [{'Fn::Sub': '%%BUCKET_NAME%%'}];
+          fn.Properties.SourceBucketNames = [{'Fn::Sub': '%%BUCKET_NAME%%-${AWS::Region}'}];
         }
         else if (fn.Properties.hasOwnProperty('PolicyName') && fn.Properties.PolicyName.includes('CustomCDKBucketDeployment')) {
           // Set CDKBucketDeployment S3 bucket Policy reference
@@ -131,8 +131,8 @@ fs.readdirSync(global_s3_assets).forEach(file => {
                   resource[arrayKey][1].filter(function(s){
                       if (s.hasOwnProperty('Ref')) {
                         fn.Properties.PolicyDocument.Statement[i].Resource = [
-                        {"Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},":s3:::%%BUCKET_NAME%%"]]},
-                        {"Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},":s3:::%%BUCKET_NAME%%/*"]]}
+                        {"Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},":s3:::%%BUCKET_NAME%%-",{"Ref": "AWS::Region"}]]},
+                        {"Fn::Join": ["",["arn:",{"Ref": "AWS::Partition"},":s3:::%%BUCKET_NAME%%-",{"Ref": "AWS::Region"},"/*"]]}
                         ]
                       }
                     });
