@@ -41,7 +41,7 @@ cd sql-based-etl-on-amazon-eks/spark-on-eks
   |   Region  |   Launch Template |
   |  ---------------------------   |   -----------------------  |
   |  ---------------------------   |   -----------------------  |
-  **Choose Your Region**| [![Deploy to AWS](images/00-deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://solutions-test-reference.s3.amazonaws.com/sql-based-etl-with-apache-spark-on-amazon-eks/v1.0.0/SparkOnEKS.template) 
+  **Choose Your Region**| [![Deploy to AWS](images/00-deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://aws-solution-sparkoneks.s3.us-east-2.amazonaws.com/blog/v1.0.0/SparkOnEKS.template) 
 
 * Option1: Deploy with default (recommended). The default region is us-east-1. 
 To launch in a different AWS Region, use the Region selector in the console navigation bar. 
@@ -51,21 +51,21 @@ To launch in a different AWS Region, use the Region selector in the console navi
 
 You can customize the solution, then generate the CFN in your region: 
 ```bash
-export BUCKET_NAME_PREFIX=<my-bucket-name> # bucket where customized code will reside
-export AWS_REGION=<your-region>
+export BUCKET_NAME=<my-bucket-name> # bucket where customized code will reside
+export MY_REGION=<$YOUR_REGION>
 export SOLUTION_NAME=sql-based-etl
 export VERSION=v1.0.0 # version number for the customized code
 
-./deployment/build-s3-dist.sh $BUCKET_NAME_PREFIX $SOLUTION_NAME $VERSION
+./deployment/build-s3-dist.sh $BUCKET_NAME $SOLUTION_NAME $VERSION
 
 # create the bucket where customized code will reside
-aws s3 mb s3://$BUCKET_NAME_PREFIX-$AWS_REGION --region $AWS_REGION
+aws s3 mb s3://$BUCKET_NAME --region $MY_REGION
 
 # Upload deployment assets to the S3 bucket
-aws s3 cp ./deployment/global-s3-assets/ s3://$BUCKET_NAME_PREFIX-$AWS_REGION/$SOLUTION_NAME/$VERSION/ --recursive --acl bucket-owner-full-control
-aws s3 cp ./deployment/regional-s3-assets/ s3://$BUCKET_NAME_PREFIX-$AWS_REGION/$SOLUTION_NAME/$VERSION/ --recursive --acl bucket-owner-full-control
+aws s3 cp ./deployment/global-s3-assets/ s3://$BUCKET_NAME/$SOLUTION_NAME/$VERSION/ --recursive --acl bucket-owner-full-control
+aws s3 cp ./deployment/regional-s3-assets/ s3://$BUCKET_NAME/$SOLUTION_NAME/$VERSION/ --recursive --acl bucket-owner-full-control
 
-echo "In web browser, paste the URL to launch the template: https://console.aws.amazon.com/cloudformation/home?region=$AWS_REGION#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://$BUCKET_NAME_PREFIX-$AWS_REGION.s3.amazonaws.com/$SOLUTION_NAME/$VERSION/SparkOnEKS.template"
+echo "In web browser, paste the URL to launch the template: https://console.aws.amazon.com/cloudformation/home?region=$MY_REGION#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://$BUCKET_NAME.s3.amazonaws.com/$SOLUTION_NAME/$VERSION/SparkOnEKS.template"
 ```
 
 [*^ back to top*](#Table-of-Contents)
