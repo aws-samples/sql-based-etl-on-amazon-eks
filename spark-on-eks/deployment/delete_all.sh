@@ -1,21 +1,24 @@
-# // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-# // SPDX-License-Identifier: MIT-0
-
 #!/bin/bash
+export stack_name=SparkOnEKS
 
 echo "Delete application code asset S3 Bucket"
-code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS \
+code_bucket=$(aws cloudformation describe-stacks --stack-name $stack_name \
 	--query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" \
 	--output text)
-
-aws s3api delete-objects \
-    --bucket $code_bucket \
-    --delete "$(aws s3api list-object-versions \
-    --bucket "${code_bucket}" \
-    --output=json \
-    --query='{Objects: Versions[].{Key:Key,VersionId:VersionId}}')"
-
+aws s3 rm s3://$code_bucket --recursive
 aws s3 rb s3://$code_bucket --force
+
+
+echo "Delete Arc docker image from ECR"
+repo_uri=$(aws cloudformation describe-stacks --stack-name $stack_name \
+	--query "Stacks[0].Outputs[?OutputKey=='IMAGEURI'].OutputValue" \
+	--output text)
+cfn_repo_name=$(echo $repo_uri| cut -d'/' -f 2 | cut -d ':' -f 1)  
+repo=$(aws ecr describe-repositories --repository-names $cfn_repo_name --query 'repositories[].repositoryName' --output text)
+if ! [ -z "$repo" ] 
+then
+	aws ecr delete-repository --repository-name $cfn_repo_name --force
+fi
 
 echo "Drop a Delta Lake table default.contact_snapshot"
 accountId=$(aws sts get-caller-identity --query Account --output text)
@@ -27,7 +30,7 @@ then
 fi
 if ! [ -z "$tbl2" ] 
 then
-	aws athena start-query-execution --query-string "DROP TABLE default.contact_snapshot_jhub" --result-configuration OutputLocation=s3://aws-athena-query-results-$accountId
+	aws athena start-query-execution --query-string "DROP TABLE default.deltalake_contact_jhub" --result-configuration OutputLocation=s3://aws-athena-query-results-$accountId
 fi
 
 echo "Delete ALB"
@@ -59,7 +62,7 @@ then
 	aws elbv2 delete-target-group --target-group-arn $jhubTG 
 fi	
 
-echo "Delete the rest of resources via CloudFormation, ensure the stack name is SparkOnEKS"
+echo "Delete the rest of resources via CloudFormation, ensure the stack name is $stack_name"
 # cd source; cdk destroy
 # aws cloudformation delete-stack --stack-name <your_stack_name>
-aws cloudformation delete-stack --stack-name SparkOnEKS
+aws cloudformation delete-stack --stack-name $stack_name

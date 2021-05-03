@@ -43,8 +43,7 @@ cd sql-based-etl-on-amazon-eks/spark-on-eks
   |  ---------------------------   |   -----------------------  |
   **US East (N. Virginia)**| [![Deploy to AWS](images/00-deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://aws-solution-sparkoneks-us-east-1.s3.amazonaws.com/blog/v1.0.0/SparkOnEKS.template) 
 
-* Option1: Deploy with default (recommended). The default region is us-east-1. 
-To launch in a different AWS Region, use the Region selector in the console navigation bar. 
+* Option1: Deploy with default (recommended). The default region is N.Virginia (us-east-1). To launch it in a different region, use the following build-s3-dist.sh script to customize. 
 * Option2: Fill in the parameter `jhubuser` if you want to setup a customized username for Jupyter login. 
 * Option3: If ETL your own data, input the parameter `datalakebucket` with your S3 bucket. 
 `NOTE: the S3 bucket must be in the same region as the deployment region.`
