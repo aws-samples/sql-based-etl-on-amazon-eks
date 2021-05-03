@@ -73,7 +73,6 @@ class EksBaseAppConst(core.Construct):
             repository='https://googlecloudplatform.github.io/spark-on-k8s-operator',
             release='spark-operator',
             create_namespace=True,
-            namespace='spark-operator',
             values=loadYamlReplaceVarLocal(source_dir+'/app_resources/spark-operator-values.yaml',fields={'':''})
         )
 
