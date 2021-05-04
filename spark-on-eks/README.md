@@ -84,9 +84,10 @@ Alternatively, if AWS CloudShell is not avaiable in your region, simply run the 
 
 [*^ back to top*](#Table-of-Contents)
 ### Connect to EKS cluster
-In the same CloudShell session or your local machine, run an EKS configure command that can be found on the [CloudFormation Console](https://console.aws.amazon.com/cloudformation/) in Stack SparkOnEKS. It looks like this:
+In the same CloudShell session to access the newly created EKS cluster, run the config command:
 ```bash
-aws eks update-kubeconfig --name <eks_name> --region <region> --role-arn <role_arn>
+# get the connection cmd line from a CFN output, establish the connection
+echo `aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?starts_with(OutputKey,'eksclusterEKSConfig')].OutputValue" --output text` | bash
 
 # check the connection
 kubectl get svc
