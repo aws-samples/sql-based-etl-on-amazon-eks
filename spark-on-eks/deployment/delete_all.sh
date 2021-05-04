@@ -1,20 +1,22 @@
 #!/bin/bash
 export stack_name=SparkOnEKS
 
-echo "Delete application code asset S3 Bucket"
 code_bucket=$(aws cloudformation describe-stacks --stack-name $stack_name \
 	--query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" \
 	--output text)
-aws s3 rm s3://$code_bucket --recursive
-aws s3 rb s3://$code_bucket --force
+if ! [ -z "$code_bucket" ] 
+then	
+	echo "Delete application code asset S3 Bucket"
+	aws s3 rm s3://$code_bucket --recursive
+	aws s3 rb s3://$code_bucket --force
+fi
 
-
-echo "Delete Arc docker image from ECR"
 repo_uri=$(aws cloudformation describe-stacks --stack-name $stack_name \
 	--query "Stacks[0].Outputs[?OutputKey=='IMAGEURI'].OutputValue" \
 	--output text)
 if ! [ -z "$repo_uri" ] 
 then
+	echo "Delete Arc docker image from ECR"
 	cfn_repo_name=$(echo $repo_uri| cut -d'/' -f 2 | cut -d ':' -f 1)  
 	aws ecr delete-repository --repository-name $cfn_repo_name --force
 fi
