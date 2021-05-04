@@ -13,10 +13,9 @@ echo "Delete Arc docker image from ECR"
 repo_uri=$(aws cloudformation describe-stacks --stack-name $stack_name \
 	--query "Stacks[0].Outputs[?OutputKey=='IMAGEURI'].OutputValue" \
 	--output text)
-cfn_repo_name=$(echo $repo_uri| cut -d'/' -f 2 | cut -d ':' -f 1)  
-repo=$(aws ecr describe-repositories --repository-names $cfn_repo_name --query 'repositories[].repositoryName' --output text)
-if ! [ -z "$repo" ] 
+if ! [ -z "$repo_uri" ] 
 then
+	cfn_repo_name=$(echo $repo_uri| cut -d'/' -f 2 | cut -d ':' -f 1)  
 	aws ecr delete-repository --repository-name $cfn_repo_name --force
 fi
 
