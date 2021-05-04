@@ -167,9 +167,9 @@ Click `SUBMIT NEW WORKFLOW` button, replace content by the followings, then `SUB
 #### Submit job by Argo CLI 
 Let's submit the scd2 notebook tested earlier. To mock up a real-world scenario, we have break it down to 3 notebook files, ie. 3 ETL jobs, stored in `deployment/app_code/job/`. 
 
-* Find the S3 bucket name in [CloudFormation console](https://console.aws.amazon.com/cloudformation). Run the command in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) then check progress in Argo UI.
+* Submit the job in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), then check progress in Argo UI.
 ```bash
-app_code_bucket=<your_codeBucket_name>
+app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
 argo submit https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/spark-on-eks/source/example/scd2-job-scheduler.yaml -n spark --watch  -p codeBucket=$app_code_bucket
 ```
 ![](images/3-argo-job-dependency.png)
