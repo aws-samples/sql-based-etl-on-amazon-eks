@@ -33,10 +33,14 @@ A project for a solution - SQL based ETL with a declarative framework powered by
 ## Deploy Infrastructure
 The provisining takes about 30 minutes to complete. 
 
+### Download the project
+
 ```bash
 git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
 cd sql-based-etl-on-amazon-eks/spark-on-eks
 ```
+
+### Launch the CFN
 
   |   Region  |   Launch Template |
   |  ---------------------------   |   -----------------------  |
@@ -50,9 +54,9 @@ cd sql-based-etl-on-amazon-eks/spark-on-eks
 
 You can customize the solution, then generate the CFN in your region: 
 ```bash
-export BUCKET_NAME_PREFIX=<my-bucket-name> # bucket where customized code will reside
-export AWS_REGION=<$YOUR_REGION>
-export SOLUTION_NAME=sql-based-etl
+export BUCKET_NAME_PREFIX=<your_bucket_name> # bucket where customized code will reside
+export AWS_REGION=<your_region>
+export SOLUTION_NAME=blog
 export VERSION=v1.0.0 # version number for the customized code
 
 ./deployment/build-s3-dist.sh $BUCKET_NAME_PREFIX $SOLUTION_NAME $VERSION
