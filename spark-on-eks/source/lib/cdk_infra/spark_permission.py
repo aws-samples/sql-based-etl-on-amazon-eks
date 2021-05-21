@@ -6,7 +6,7 @@ from aws_cdk import (
     aws_iam as iam
 )
 from aws_cdk.aws_eks import ICluster, KubernetesManifest
-from lib.util.manifest_reader import loadYamlReplaceVarLocal
+from lib.util.manifest_reader import load_yaml_replace_var_local
 import os
 
 class SparkOnEksSAConst(core.Construct):
@@ -58,7 +58,7 @@ class SparkOnEksSAConst(core.Construct):
 
         _etl_rb = KubernetesManifest(self,'ETLRoleBinding',
             cluster=eks_cluster,
-            manifest=loadYamlReplaceVarLocal(source_dir+'/app_resources/etl-rbac.yaml', 
+            manifest=load_yaml_replace_var_local(source_dir+'/app_resources/etl-rbac.yaml', 
             fields= {
                 "{{MY_SA}}": self._etl_sa.service_account_name
             }, 
@@ -78,7 +78,7 @@ class SparkOnEksSAConst(core.Construct):
                 "{{codeBucket}}": code_bucket,
                 "{{datalakeBucket}}": datalake_bucket
         }
-        _etl_iam = loadYamlReplaceVarLocal(source_dir+'/app_resources/etl-iam-role.yaml',fields=_bucket_setting)
+        _etl_iam = load_yaml_replace_var_local(source_dir+'/app_resources/etl-iam-role.yaml',fields=_bucket_setting)
         for statmnt in _etl_iam:
             self._etl_sa.add_to_principal_policy(iam.PolicyStatement.from_json(statmnt))
             self._jupyter_sa.add_to_principal_policy(iam.PolicyStatement.from_json(statmnt))
@@ -93,13 +93,13 @@ class SparkOnEksSAConst(core.Construct):
         self._spark_sa.node.add_dependency(etl_ns)
 
         _spark_rb = eks_cluster.add_manifest('sparkRoleBinding',
-            loadYamlReplaceVarLocal(source_dir+'/app_resources/native-spark-rbac.yaml',
+            load_yaml_replace_var_local(source_dir+'/app_resources/native-spark-rbac.yaml',
                 fields= {
                     "{{MY_SA}}": self._spark_sa.service_account_name
                 })
         )
         _spark_rb.node.add_dependency(self._spark_sa)
 
-        _native_spark_iam = loadYamlReplaceVarLocal(source_dir+'/app_resources/native-spark-iam-role.yaml',fields=_bucket_setting)
+        _native_spark_iam = load_yaml_replace_var_local(source_dir+'/app_resources/native-spark-iam-role.yaml',fields=_bucket_setting)
         for statmnt in _native_spark_iam:
             self._spark_sa.add_to_principal_policy(iam.PolicyStatement.from_json(statmnt))

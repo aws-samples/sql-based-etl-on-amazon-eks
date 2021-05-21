@@ -9,7 +9,6 @@ from aws_cdk import (
     aws_s3 as s3
 )
 
-
 class NestedStack(core.NestedStack):
 
     @property
@@ -20,12 +19,7 @@ class NestedStack(core.NestedStack):
     def argo_cf(self):
         return self._argo_cf
 
-    def __init__(self, scope: core.Construct, id: str,
-        logbucket: str,
-        eksname: str, 
-        argo_alb_dns_name: str, 
-        jhub_alb_dns_name: str, 
-        **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id: str,logbucket: str,argo_alb_dns_name: str, jhub_alb_dns_name: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
 # //**********************************************************************************************************//

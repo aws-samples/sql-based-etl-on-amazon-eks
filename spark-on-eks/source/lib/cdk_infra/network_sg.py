@@ -27,14 +27,8 @@ class NetworkSgConst(core.Construct):
         self._vpc = ec2.Vpc(self, 'eksVpc',max_azs=2)
         core.Tags.of(self._vpc).add('Name', eksname + 'EksVpc')
 
-        self._log_bucket=s3.Bucket.from_bucket_name(self,'vpc_logbucket', codebucket)
-        self._vpc.add_flow_log("FlowLogCloudWatch",
-            destination=ec2.FlowLogDestination.to_s3(self._log_bucket,'vpcRejectlog/'),
-            traffic_type=ec2.FlowLogTrafficType.REJECT
-        )
         # VPC endpoint security group
         self._vpc_endpoint_sg = ec2.SecurityGroup(self,'EndpointSg',
-            security_group_name='SparkOnEKS-VPCEndpointSg',
             vpc=self._vpc,
             description='Security Group for Endpoint',
         )
@@ -51,17 +45,3 @@ class NetworkSgConst(core.Construct):
         self._vpc.add_interface_endpoint("CWLogsEndpoint", service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,security_groups=[self._vpc_endpoint_sg])
         self._vpc.add_interface_endpoint("AthenaEndpoint", service=ec2.InterfaceVpcEndpointAwsService.ATHENA,security_groups=[self._vpc_endpoint_sg])
         self._vpc.add_interface_endpoint("KMSEndpoint", service=ec2.InterfaceVpcEndpointAwsService.KMS,security_groups=[self._vpc_endpoint_sg])
-        # //******************************************************//
-        # //******************* SECURITY GROUP ******************//
-        # //****************************************************//
-        # EFS SG
-        # self._eks_efs_sg = ec2.SecurityGroup(self,'EFSSg',
-        #     security_group_name=eksname + '-EFS-sg',
-        #     vpc=self._vpc,
-        #     description='NFS access to EFS from EKS worker nodes',
-        # )
-        # self._eks_efs_sg.add_ingress_rule(ec2.Peer.ipv4(self._vpc.vpc_cidr_block),ec2.Port.tcp(port=2049))
-
-        # core.Tags.of(self._eks_efs_sg).add('kubernetes.io/cluster/' + eksname,'owned')
-        # core.Tags.of(self._eks_efs_sg).add('Name', eksname+'-EFS-sg')
-    

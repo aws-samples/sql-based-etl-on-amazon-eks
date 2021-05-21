@@ -22,7 +22,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="./"),
 
     install_requires=[
-         "aws-cdk.core==1.96.0",
+        "aws-cdk.core==1.96.0",
         "aws-cdk.aws_iam==1.96.0",
         "aws-cdk.aws_eks==1.96.0",
         "aws-cdk.aws_ec2==1.96.0",

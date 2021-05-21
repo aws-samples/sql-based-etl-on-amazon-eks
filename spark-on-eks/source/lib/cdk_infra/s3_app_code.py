@@ -23,9 +23,9 @@ class S3AppCodeConst(core.Construct):
             encryption=s3.BucketEncryption.KMS_MANAGED,
             removal_policy=core.RemovalPolicy.DESTROY,
             auto_delete_objects=True,
-            # server_access_logs_prefix="bucketAccessLog",
             access_control = s3.BucketAccessControl.LOG_DELIVERY_WRITE
-        )  
+        )
+
         source_dir=os.path.split(os.environ['VIRTUAL_ENV'])[0]
         s3deploy.BucketDeployment(self, "DeployCode",
             sources=[s3deploy.Source.asset(source_dir+'/deployment/app_code')],

@@ -3,22 +3,15 @@
 
 #!/usr/bin/env python3
 from aws_cdk import core
-# from bin.config import ConfigSectionMap
 from lib.spark_on_eks_stack import SparkOnEksStack
 from lib.cloud_front_stack import NestedStack
-from os import environ
 
 app = core.App()
-
-# Get environment vars
 eks_name = app.node.try_get_context('cluster_name')
-env=core.Environment(account=environ.get("CDK_DEPLOY_ACCOUNT", environ["CDK_DEFAULT_ACCOUNT"]),
-                    region=environ.get("AWS_REGION", environ["CDK_DEFAULT_REGION"]))
-
-# Spin up the main stack
-eks_stack = SparkOnEksStack(app, 'SparkOnEKS', eks_name, env=env)
-# Recommend to remove the CloudFront stack. Setup your own SSL certificate and add it to ALB.
-cf_nested_stack = NestedStack(eks_stack,'CreateCloudFront', eks_stack.code_bucket, eks_name, eks_stack.argo_url, eks_stack.jhub_url)
+eks_stack = SparkOnEksStack(app, 'SparkOnEKS', eks_name)
+# The CloudFront offers a default domain name to enable HTTPS.
+# Recommend to issue a TLS certificate with your own domain, delete the CF nested stack 
+cf_nested_stack = NestedStack(eks_stack,'CreateCloudFront', eks_stack.code_bucket, eks_stack.argo_url, eks_stack.jhub_url)
 
 core.Tags.of(eks_stack).add('project', 'sqlbasedetl')
 core.Tags.of(cf_nested_stack).add('project', 'sqlbasedetl')

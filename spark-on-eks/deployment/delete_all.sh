@@ -1,24 +1,23 @@
+# // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# // SPDX-License-Identifier: MIT-0
 #!/bin/bash
-export stack_name=SparkOnEKS
 
-code_bucket=$(aws cloudformation describe-stacks --stack-name $stack_name \
-	--query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" \
-	--output text)
+export stack_name="${1:-SparkOnEKS}"
+lower_stack_name=$(echo $stack_name | tr '[:upper:]' '[:lower:]')
+
+code_bucket="s3://"$(aws s3api list-buckets --query 'Buckets[?starts_with(Name,`'${lower_stack_name:0:18}'`)==`true`]'.Name --output text)
 if ! [ -z "$code_bucket" ] 
 then	
-	echo "Delete application code asset S3 Bucket"
-	aws s3 rm s3://$code_bucket --recursive
-	aws s3 rb s3://$code_bucket --force
+	echo "Delete vpc log from asset S3 Bucket"
+	aws s3 rm ${code_bucket}/vpcRejectlog/
+	aws s3 rm ${code_bucket}/BuildArcDockerImage/
 fi
 
-repo_uri=$(aws cloudformation describe-stacks --stack-name $stack_name \
-	--query "Stacks[0].Outputs[?OutputKey=='IMAGEURI'].OutputValue" \
-	--output text)
-if ! [ -z "$repo_uri" ] 
+repo_name=$(aws ecr describe-repositories --query 'repositories[?starts_with(repositoryName,`'$lower_stack_name'`)==`true`]'.repositoryName --output text)
+if ! [ -z "$repo_name" ] 
 then
 	echo "Delete Arc docker image from ECR"
-	cfn_repo_name=$(echo $repo_uri| cut -d'/' -f 2 | cut -d ':' -f 1)  
-	aws ecr delete-repository --repository-name $cfn_repo_name --force
+	aws ecr delete-repository --repository-name $repo_name --force
 fi
 
 echo "Drop a Delta Lake table default.contact_snapshot"
@@ -63,7 +62,7 @@ then
 	aws elbv2 delete-target-group --target-group-arn $jhubTG 
 fi	
 
-echo "Delete the rest of resources via CloudFormation, ensure the stack name is $stack_name"
+echo "Delete the rest of resources via CloudFormation, ensure the stack name $stack_name is correct"
 # cd source; cdk destroy
 # aws cloudformation delete-stack --stack-name <your_stack_name>
 aws cloudformation delete-stack --stack-name $stack_name

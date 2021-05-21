@@ -13,7 +13,6 @@ from lib.cdk_infra.eks_service_account import EksSAConst
 from lib.cdk_infra.eks_base_app import EksBaseAppConst
 from lib.cdk_infra.s3_app_code import S3AppCodeConst
 from lib.cdk_infra.spark_permission import SparkOnEksSAConst
-from lib.cloud_front_stack import NestedStack
 from lib.util.manifest_reader import *
 import json,os
 
@@ -60,9 +59,9 @@ class SparkOnEksStack(core.Stack):
         # 1. Setup EKS base infrastructure
         network_sg = NetworkSgConst(self,'network-sg', eksname, self.app_s3.code_bucket)
         iam = IamConst(self,'iam_roles', eksname)
-        eks_cluster = EksConst(self,'eks_cluster', eksname, network_sg.vpc, iam.managed_node_role, iam.admin_role, self.region)
-        eks_security = EksSAConst(self, 'eks_sa', eks_cluster.my_cluster, jhub_secret)
-        eks_base_app = EksBaseAppConst(self, 'eks_base_app', eks_cluster.my_cluster, self.region)
+        eks_cluster = EksConst(self,'eks_cluster', eksname, network_sg.vpc, iam.managed_node_role, iam.admin_role)
+        EksSAConst(self, 'eks_sa', eks_cluster.my_cluster, jhub_secret)
+        base_app=EksBaseAppConst(self, 'eks_base_app', eks_cluster.my_cluster)
 
         # 2. Setup Spark application access control
         app_security = SparkOnEksSAConst(self,'spark_service_account', 
@@ -71,24 +70,8 @@ class SparkOnEksStack(core.Stack):
             self.app_s3.code_bucket,
             datalake_bucket.value_as_string
         )
-        
-        # 3. Install ETL orchestrator - Argo
-        # can be replaced by other workflow tool, ie. Airflow
-        argo_install = eks_cluster.my_cluster.add_helm_chart('ARGOChart',
-            chart='argo',
-            repository='https://argoproj.github.io/argo-helm',
-            release='argo',
-            namespace='argo',
-            create_namespace=True,
-            values=loadYamlLocal(source_dir+'/app_resources/argo-values.yaml')
-        )
-        # Create a Spark workflow template with different T-shirt size
-        submit_tmpl = eks_cluster.my_cluster.add_manifest('SubmitSparkWrktmpl',
-            loadYamlLocal(source_dir+'/app_resources/spark-template.yaml')
-        )
-        submit_tmpl.node.add_dependency(argo_install)
 
-        # 4. Install Arc Jupyter notebook to as Spark ETL IDE
+        # 3. Install Arc Jupyter notebook to as Spark ETL IDE
         jhub_install= eks_cluster.my_cluster.add_helm_chart('JHubChart',
             chart='jupyterhub',
             repository='https://jupyterhub.github.io/helm-chart',
@@ -96,32 +79,57 @@ class SparkOnEksStack(core.Stack):
             version='0.11.1',
             namespace='jupyter',
             create_namespace=False,
-            values=loadYamlReplaceVarLocal(source_dir+'/app_resources/jupyter-values.yaml', 
+            values=load_yaml_replace_var_local(source_dir+'/app_resources/jupyter-values.yaml', 
                 fields={
                     "{{codeBucket}}": self.app_s3.code_bucket,
-                    "{{region}}": self.region 
+                    "{{region}}": core.Aws.REGION
                 })
         )
+        jhub_install.node.add_dependency(base_app.alb_created)
 
         # get Arc Jupyter login from secrets manager
         name_parts= core.Fn.split('-',jhub_secret.secret_name)
         name_no_suffix=core.Fn.join('-',[core.Fn.select(0, name_parts), core.Fn.select(1, name_parts)])
-
         config_hub = eks.KubernetesManifest(self,'JHubConfig',
             cluster=eks_cluster.my_cluster,
-            manifest=loadYamlReplaceVarLocal(source_dir+'/app_resources/jupyter-config.yaml', 
+            manifest=load_yaml_replace_var_local(source_dir+'/app_resources/jupyter-config.yaml', 
                 fields= {
                     "{{MY_SA}}": app_security.jupyter_sa,
-                    "{{REGION}}": self.region, 
+                    "{{REGION}}": core.Aws.REGION, 
                     "{{SECRET_NAME}}": name_no_suffix
                 }, 
                 multi_resource=True)
         )
         config_hub.node.add_dependency(jhub_install)
+
+        # 4. Install ETL orchestrator - Argo
+        # can be replaced by other workflow tool, ie. Airflow
+        argo_install = eks_cluster.my_cluster.add_helm_chart('ARGOChart',
+            chart='argo',
+            repository='https://argoproj.github.io/argo-helm',
+            release='argo',
+            namespace='argo',
+            create_namespace=True,
+            values=load_yaml_local(source_dir+'/app_resources/argo-values.yaml')
+        )
+        argo_install.node.add_dependency(config_hub)
+        # Create a Spark workflow template with different T-shirt size
+        submit_tmpl = eks_cluster.my_cluster.add_manifest('SubmitSparkWrktmpl',
+            load_yaml_local(source_dir+'/app_resources/spark-template.yaml')
+        )
+        submit_tmpl.node.add_dependency(argo_install)
    
         # 5.(OPTIONAL) retrieve ALB DNS Name to enable Cloudfront in the following nested stack.
-        # Recommend to remove this section and the rest of CloudFront component. 
-        # Setup your own certificate then add to ALB, to enable the HTTPS.
+        # Recommend to remove the CloudFront component
+        # Setup your TLS certificate with your own domain name.
+        self._jhub_alb=eks.KubernetesObjectValue(self, 'jhubALB',
+            cluster=eks_cluster.my_cluster,
+            json_path='.status.loadBalancer.ingress[0].hostname',
+            object_type='ingress',
+            object_name='jupyterhub',
+            object_namespace='jupyter'
+        )
+        self._jhub_alb.node.add_dependency(config_hub)
         self._argo_alb = eks.KubernetesObjectValue(self, 'argoALB',
             cluster=eks_cluster.my_cluster,
             json_path='.status.loadBalancer.ingress[0].hostname',
@@ -131,11 +139,3 @@ class SparkOnEksStack(core.Stack):
         )
         self._argo_alb.node.add_dependency(argo_install)
 
-        self._jhub_alb=eks.KubernetesObjectValue(self, 'jhubALB',
-            cluster=eks_cluster.my_cluster,
-            json_path='.status.loadBalancer.ingress[0].hostname',
-            object_type='ingress',
-            object_name='jupyterhub',
-            object_namespace='jupyter'
-        )
-        self._jhub_alb.node.add_dependency(config_hub)
