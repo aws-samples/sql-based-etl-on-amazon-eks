@@ -24,20 +24,6 @@ function setParameter(template) {
       template.Rules[a] = undefined;
   })
 }
-function setOutput(template) {
-  const outputs = (template.Outputs) ? template.Outputs : {};
-  const output=Object.keys(outputs).filter(function(key){
-    if(typeof(outputs[key].Value["Fn::Join"]) === 'object' && typeof(outputs[key].Value["Fn::Join"][1][0]) === 'string'){
-      return(outputs[key].Value["Fn::Join"][1][0].startsWith('aws eks'))
-    }
-  })
-  output.forEach(i => 
-    template.Outputs[i].Value={
-      "Fn::Join": ["",[outputs[i].Value["Fn::Join"][1][0],outputs[i].Value["Fn::Join"][1][1],
-      " --region ",{"Ref": "AWS::Region"}," --role-arn ",outputs[i].Value["Fn::Join"][1][3]]]
-    })
-}
-
 function assetRef(s3BucketRef) {
   // Get S3 bucket key references from assets file
     const raw_meta = fs.readFileSync(`${global_s3_assets}/${solution_name}.assets.json`);
@@ -56,7 +42,7 @@ fs.readdirSync(global_s3_assets).forEach(file => {
 
     //1. Clean-up parameters section
     setParameter(template);
-    setOutput(template);
+    // setOutput(template);
 
     const resources = (template.Resources) ? template.Resources : {};
     //3. Clean-up Account ID and region to enable cross account deployment

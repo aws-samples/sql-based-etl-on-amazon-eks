@@ -54,19 +54,22 @@ The provisining takes about 30 minutes to complete.
 Build your own solution on top of the project, for example reconfigure the Jupyter notebook, then generate the CFN in your region: 
 
 ```bash
+# go to the project directory
+cd spark-on-eks
+
 export BUCKET_NAME_PREFIX=<your_bucket_name> # bucket where customized code will reside
 export AWS_REGION=<your_region>
 export SOLUTION_NAME=blog
 export VERSION=v1.0.0 # version number for the customized code
 
-./spark-on-eks/deployment/build-s3-dist.sh $BUCKET_NAME_PREFIX $SOLUTION_NAME $VERSION
+./deployment/build-s3-dist.sh $BUCKET_NAME_PREFIX $SOLUTION_NAME $VERSION
 
 # create the bucket where customized code will reside
 aws s3 mb s3://$BUCKET_NAME_PREFIX-$AWS_REGION --region $AWS_REGION
 
 # Upload deployment assets to the S3 bucket
-aws s3 cp ./spark-on-eks/deployment/global-s3-assets/ s3://$BUCKET_NAME_PREFIX-$AWS_REGION/$SOLUTION_NAME/$VERSION/ --recursive --acl bucket-owner-full-control
-aws s3 cp ./spark-on-eks/deployment/regional-s3-assets/ s3://$BUCKET_NAME_PREFIX-$AWS_REGION/$SOLUTION_NAME/$VERSION/ --recursive --acl bucket-owner-full-control
+aws s3 cp ./deployment/global-s3-assets/ s3://$BUCKET_NAME_PREFIX-$AWS_REGION/$SOLUTION_NAME/$VERSION/ --recursive --acl bucket-owner-full-control
+aws s3 cp ./deployment/regional-s3-assets/ s3://$BUCKET_NAME_PREFIX-$AWS_REGION/$SOLUTION_NAME/$VERSION/ --recursive --acl bucket-owner-full-control
 
 echo -e "\nIn web browser, paste the URL to launch the template: https://console.aws.amazon.com/cloudformation/home?region=$AWS_REGION#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://$BUCKET_NAME_PREFIX-$AWS_REGION.s3.amazonaws.com/$SOLUTION_NAME/$VERSION/SparkOnEKS.template"
 ```
@@ -150,16 +153,20 @@ kubectl get svc
                 value: "--ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data \
                 --ETL_CONF_JOB_URL=https://raw.githubusercontent.com/tripl-ai/arc-starter/master/examples/kubernetes"
   ```
+  ![](images/3-argo-job-dependency.png)
+
 ### Submit ETL job via Argo CLI
 
-Now, let's submit the SCD2 notebook tested in Jupyter via a commandline tool. To mock up a real-world scenario, we have broken it down to 3 files, ie. ETL jobs, stored in `spark-on-eks/deployment/app_code/job/`(/deployment/app_code/job). 
+Now, let's submit the SCD2 notebook tested in Jupyter via a commandline tool. To mock up a real-world scenario, we have broken it down to 3 files, ie. ETL jobs, stored in "[spark-on-eks/deployment/app_code/job/]"(/deployment/app_code/job). 
 
 1. Submit the job and check the progress in Argo web console.
 ```bash
 app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
 argo submit https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/spark-on-eks/source/example/scd2-job-scheduler.yaml -n spark --watch  -p codeBucket=$app_code_bucket
+
+# or submit the job menifest file from local computer
+argo submit source/example/scd2-job-scheduler.yaml -n spark --watch  -p codeBucket=$app_code_bucket
 ```
-![](images/3-argo-job-dependency.png)
 
 2. Query the table in [Athena](https://console.aws.amazon.com/athena/) to see if it has the same outcome as the test in Jupyter earlier. 
 
