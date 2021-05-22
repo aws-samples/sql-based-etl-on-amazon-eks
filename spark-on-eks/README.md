@@ -258,13 +258,9 @@ kubectl get pod -n spark
 
 [*^ back to top*](#Table-of-Contents)
 ## Clean up
-Go to the repo's root directory, and run the clean-up script. 
-
+Go to the repo's root directory, and run the clean-up script with your CloudFormation stack name.The default value is SparkOnEKS. If an error "(ResourceInUse) when calling the DeleteTargetGroup operation" occurs, simply run the script again.
 ```bash
 cd sql-based-etl-on-amazon-eks/spark-on-eks
 ./deployment/delete_all.sh
 ```
-Follow the instruction below to delete the remaining resources on the AWS management console if needed.
-1.  Sign in to the AWS CloudFormation console. 
-2.  Select this solution’s installation stack called SparkOnEKS.
-3.  Choose Delete.
+Go to your [CloudFormation console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1), manually delete the remaining resources if needed.
