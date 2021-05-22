@@ -9,11 +9,11 @@ A project for a solution - SQL based ETL with a declarative framework powered by
 
 #### Table of Contents
 * [Prerequisites](#Prerequisites) 
-* [Deploy Infrastructure](#Deploy-Infrastructure)
+* [Deploy CloudFormation](#Launch-the-CFN)
 * [Post Deployment](#Post-Deployment)
   * [Install kubernetes tool](#Install-kubernetes-tool)
   * [Connect to EKS](#Connect-to-EKS-cluster)
-  * [Test ETL job in Jupyter](#Test-Arc-ETL-job-in-Jupyter)
+  * [Build job in Jupyter](#Build-job-in-Jupyter)
   * [Arc ETL job](#Arc-ETL-job)
     * [Submit job on Argo UI](#Submit-job-on-Argo-UI)
     * [Submit job by Argo CLI](#Submit-job-by-Argo-CLI)
@@ -30,29 +30,31 @@ A project for a solution - SQL based ETL with a declarative framework powered by
 1. AWS CLI is configured to communicate with services in your deployment account. Either set your profile by `export AWS_PROFILE=<your_aws_profile>` , or run `aws configure`.
 2. [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is available in your deployment **region**. Otherwise, run all post deployment commands in a local computer.
 
-## Deploy Infrastructure
-The provisining takes about 30 minutes to complete. 
-
-### Download the project
+## Download the project
 
 ```bash
 git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
-cd sql-based-etl-on-amazon-eks/spark-on-eks
+
 ```
 
-### Launch the CFN
+## Launch the CFN
+
+The provisining takes about 30 minutes to complete. 
 
   |   Region  |   Launch Template |
   |  ---------------------------   |   -----------------------  |
   |  ---------------------------   |   -----------------------  |
   **US East (N. Virginia)**| [![Deploy to AWS](images/00-deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://aws-solution-sparkoneks-us-east-1.s3.amazonaws.com/blog/v1.0.0/SparkOnEKS.template) 
 
-* Option1: Deploy with default (recommended). The default region is N.Virginia (us-east-1). To launch it in a different region, use the following build-s3-dist.sh script to customize. 
+* Option1: Deploy with default (recommended). Use the following script to deploy in a different region. 
 * Option2: Fill in the parameter `jhubuser` if you want to setup a customized username for Jupyter login. 
 * Option3: If ETL your own data, input the parameter `datalakebucket` with your S3 bucket. 
 `NOTE: the S3 bucket must be in the same region as the deployment region.`
 
-You can customize the solution, then generate the CFN in your region: 
+## Customization
+
+Build your own solution on top of the project, for example reconfigure the Jupyter notebook, then generate the CFN in your region: 
+
 ```bash
 export BUCKET_NAME_PREFIX=<your_bucket_name> # bucket where customized code will reside
 export AWS_REGION=<your_region>
@@ -76,21 +78,22 @@ echo "In web browser, paste the URL to launch the template: https://console.aws.
 
 ### Install kubernetes tool
 Go to [AWS CloudShell](https://console.aws.amazon.com/cloudshell/), select your deployment **region** and run the command: 
+
  ```bash
  curl https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/spark-on-eks/deployment/setup_cmd_tool.sh | bash
  ```
-NOTE: each CloudShell session will timeout after idle for 20 minutes, the installation may need to run again.
+or run the commands in your computer:
 
-Alternatively, if AWS CloudShell is not avaiable in your region, simply run the post deployment commands in your computer:
  ```bash
+ cd sql-based-etl-on-amazon-eks/spark-on-eks
  ./deployment/setup_cmd_tool.sh
  ```
 
 [*^ back to top*](#Table-of-Contents)
 ### Connect to EKS cluster
-In the same CloudShell session to access the newly created EKS cluster, run the config command:
+
 ```bash
-# get the connection cmd line from a CFN output, establish the connection
+# get the connection cmd line from a CFN output, then connect
 echo `aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?starts_with(OutputKey,'eksclusterEKSConfig')].OutputValue" --output text` | bash
 
 # check the connection
@@ -98,7 +101,7 @@ kubectl get svc
 ```
 
 [*^ back to top*](#Table-of-Contents)
-### Test Arc ETL job in Jupyter
+### Build job in Jupyter
 The sample [contacts data](/deployment/app_code/data/) is not real data. They are generated programatically by a [python script](https://raw.githubusercontent.com/cartershanklin/hive-scd-examples/master/merge_data/generate.py).
 
 ![](images/fake_data.gif)

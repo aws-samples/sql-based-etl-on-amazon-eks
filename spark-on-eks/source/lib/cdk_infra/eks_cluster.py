@@ -23,7 +23,7 @@ class EksConst(core.Construct):
                 cluster_name=eksname,
                 masters_role=eks_adminrole,
                 output_cluster_name=True,
-                version= eks.KubernetesVersion.V1_18,
+                version= eks.KubernetesVersion.V1_19,
                 endpoint_access= eks.EndpointAccess.PUBLIC_AND_PRIVATE,
                 default_capacity=0
         )

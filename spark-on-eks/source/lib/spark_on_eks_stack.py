@@ -124,16 +124,16 @@ class SparkOnEksStack(core.Stack):
         # Setup your TLS certificate with your own domain name.
         self._jhub_alb=eks.KubernetesObjectValue(self, 'jhubALB',
             cluster=eks_cluster.my_cluster,
-            json_path='.status.loadBalancer.ingress[0].hostname',
-            object_type='ingress',
+            json_path='..status.loadBalancer.ingress[0].hostname',
+            object_type='ingress.networking',
             object_name='jupyterhub',
             object_namespace='jupyter'
         )
         self._jhub_alb.node.add_dependency(config_hub)
         self._argo_alb = eks.KubernetesObjectValue(self, 'argoALB',
             cluster=eks_cluster.my_cluster,
-            json_path='.status.loadBalancer.ingress[0].hostname',
-            object_type='ingress',
+            json_path='..status.loadBalancer.ingress[0].hostname',
+            object_type='ingress.networking',
             object_name='argo-server',
             object_namespace='argo'
         )
