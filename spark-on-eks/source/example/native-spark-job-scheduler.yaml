@@ -7,15 +7,15 @@ spec:
   type: Python
   pythonVersion: "3"
   deployMode: cluster
-  image: ghcr.io/tripl-ai/arc:arc_3.7.0_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.5.0
+  image: ghcr.io/tripl-ai/arc:arc_3.8.2_spark_3.0.2_scala_2.12_hadoop_3.2.0_1.3.0
   imagePullPolicy: Always
   mainApplicationFile: "s3a://$(BUCKET_PARAM)/app_code/job/wordcount.py"
   arguments: ["s3a://$(BUCKET_PARAM)/app_code/output/native"]
-  sparkVersion: "3.0.1"
+  sparkVersion: "3.0.2"
   sparkConf:
     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
     "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
-    "spark.kubernetes.allocation.batch.size": "10" 
+    "spark.kubernetes.allocation.batch.size": "15" 
     "spark.io.encryption.enabled": "true"
     "spark.kubernetes.local.dirs.tmpfs": "true"
   volumes:

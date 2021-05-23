@@ -24,7 +24,7 @@ spec:
             - name: jobId
               value: initial-load
             - name: image
-              value: ghcr.io/tripl-ai/arc:arc_3.7.0_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.5.0
+              value: ghcr.io/tripl-ai/arc:arc_3.8.2_spark_3.0.2_scala_2.12_hadoop_3.2.0_1.3.0
             - name: configUri
               value: "s3a://{{workflow.parameters.codeBucket}}/app_code/job/initial_load.ipynb"
             - name: parameters
@@ -39,7 +39,7 @@ spec:
             - name: jobId
               value: delta-load 
             - name: image
-              value: ghcr.io/tripl-ai/arc:arc_3.7.0_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.5.0
+              value: ghcr.io/tripl-ai/arc:arc_3.8.2_spark_3.0.2_scala_2.12_hadoop_3.2.0_1.3.0
             - name: configUri
               value: "s3a://{{workflow.parameters.codeBucket}}/app_code/job/delta_load.ipynb"
             - name: parameters
@@ -55,7 +55,7 @@ spec:
             - name: jobId
               value: SCD2-merge 
             - name: image
-              value: ghcr.io/tripl-ai/arc:arc_3.7.0_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.5.0
+              value: ghcr.io/tripl-ai/arc:arc_3.8.2_spark_3.0.2_scala_2.12_hadoop_3.2.0_1.3.0
             - name: configUri
               value: "s3a://{{workflow.parameters.codeBucket}}/app_code/job/scd2_merge.ipynb"
             - name: parameters

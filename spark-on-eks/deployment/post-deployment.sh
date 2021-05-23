@@ -11,19 +11,11 @@ echo "Make sure your CloudFormation stack name $stack_name is correct. "
 echo "Change it in the script if you use a different name."
 echo "================================================================================================"
 
-# 0. download the project if run the script from AWS CloudShell
+# 1. download the project if run the script from AWS CloudShell
 if [ $# -eq 0 ]; then
 	echo -e "\nDownload github project"
 	git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
 fi
-
-# 1. update ECR endpoint in example jobs
-export ECR_IMAGE_URI=$(aws cloudformation describe-stacks --stack-name $stack_name \
---query "Stacks[0].Outputs[?OutputKey=='IMAGEURI'].OutputValue" --output text)
-echo -e "\nUpdate ECR url in sample job files"
-sed -i.bak "s|{{ECR_URL}}|${ECR_IMAGE_URI}|g" source/example/*.yaml
-
-find . -type f -name "*.bak" -delete
 
 # 2. install k8s command tools 
 echo -e "\ninstall kubectl tool..."

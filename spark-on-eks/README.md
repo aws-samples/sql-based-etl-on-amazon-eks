@@ -235,7 +235,7 @@ kubectl get pod -n spark
 See the demonstration simulating a Spot interruption scenario: 
 ![](images/driver_interruption_test.gif)
 
-2. Executor test - kill one of executors: 
+2. Executor test - when all executors' status are running, kill one of them: 
 ```bash
 # replace the placeholder
 kubectl delete -n spark pod <example:amazon-reviews-word-count-51ac6d777f7cf184-exec-1> --force
