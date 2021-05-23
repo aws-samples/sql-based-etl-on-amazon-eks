@@ -15,7 +15,7 @@ spec:
   sparkConf:
     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
     "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
-    "spark.kubernetes.allocation.batch.size": "10" 
+    "spark.kubernetes.allocation.batch.size": "20" 
     "spark.io.encryption.enabled": "true"
     "spark.kubernetes.local.dirs.tmpfs": "true"
   volumes:
@@ -72,8 +72,7 @@ spec:
                 values: 
                 - Ec2Spot    
     cores: 1
-    instances: 10
-    memory: "5G"
+    memory: "4G"
     labels:
       role: executor
     volumeMounts:

@@ -79,7 +79,7 @@ echo -e "\nIn web browser, paste the URL to launch the template: https://console
 
 ### Run a script
 
-Go to AWS CloudShell:[[link to AWS CloudShell]](https://console.aws.amazon.com/cloudshell/), select your **region** the solution was deployed. Run the command:
+Go to AWS CloudShell:[[link to AWS CloudShell]](https://console.aws.amazon.com/cloudshell/), select your **REGION** the solution was deployed. Run the command:
  ```bash
  curl https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/spark-on-eks/deployment/post-deployment.sh | bash
  ```
@@ -116,13 +116,11 @@ SELECT * FROM default.deltalake_contact_jhub WHERE id=12
 
 1. Check your connection in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or local computer. If no access to EKS or no argoCLI installed, run the [post-deployment script](#run-a-script) again.
 ```bash
-# check EKS conneciton & argoCLI
 kubectl get svc && argo
 ```
 2. Login to Argo workflow website. The authentication token refreshes every 10mins (configurable). Run the script again if timeout.
 ```bash
-ARGO_URL=$(aws cloudformation describe-stacks --stack-name SparkOnEKS \
---query "Stacks[0].Outputs[?OutputKey=='ARGOURL'].OutputValue" --output text)
+ARGO_URL=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='ARGOURL'].OutputValue" --output text)
 LOGIN=$(argo auth token)
 echo -e "\nArgo website:\n$ARGO_URL\n"
 echo -e "\nLogin token:\n$LOGIN\n"
@@ -169,8 +167,7 @@ To demonstrate Argo's orchestration advantage with a job dependency feature, the
 ```bash
 app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS \
 --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
-argo submit source/example/scd2-job-scheduler.yaml -n spark \
---watch -p codeBucket=$app_code_bucket
+argo submit source/example/scd2-job-scheduler.yaml -n spark --watch -p codeBucket=$app_code_bucket
 ```
 
 ![](source/images/3-argo-job-dependency.png)
@@ -203,14 +200,17 @@ app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --q
 kubectl create -n spark configmap special-config --from-literal=codeBucket=$app_code_bucket
 kubectl apply -f source/example/native-spark-job-scheduler.yaml
 ```
-
+Check job progress:
 ```bash
 kubectl get pod -n spark
-
-# watch progress on SparkUI
-# only works if submit the job from local
+# watch progress on SparkUI, only works if submit the job from local
 kubectl port-forward word-count-driver 4040:4040 -n spark
 # go to `localhost:4040` from your web browser
+```
+Run the job again if neccesary:
+```bash
+kubectl delete -f source/example/native-spark-job-scheduler.yaml
+kubectl apply -f source/example/native-spark-job-scheduler.yaml
 ```
 
 [*^ back to top*](#Table-of-Contents)
@@ -219,10 +219,10 @@ In Spark world, we know the driver is a single point of failure of a Spark appli
 
 The pySpark job takes approx. 10 minutes to finish. Let's test the self-recovery against the active Spark cluster.
 
-* Driver test - manually kill the EC2 instance running your Spark driver:
+1. Driver test - manually kill the EC2 instance running your Spark driver:
 ```bash
 # find the EC2 host name, replace the placeholder below
-Kubectl describe pod word-count-driver -n spark
+kubectl describe pod word-count-driver -n spark
 ```
 ```bash
 kubectl delete node <ec2_host_name>
@@ -232,7 +232,7 @@ kubectl get pod -n spark
 See the demonstration below, which simulates the Spot interruption scenario: 
 ![](images/driver_interruption_test.gif)
 
-* Executor test - kill one of executors: 
+2. Executor test - kill one of executors: 
 ```bash
 # get an executor pod name
 kubectl get pod -n spark
