@@ -9,7 +9,7 @@ A project for a solution - SQL based ETL with a declarative framework powered by
 
 #### Table of Contents
 * [Prerequisites](#Prerequisites) 
-* [Deploy CFN](#Launch-the-CFN)
+* [Deploy CFN](#Deploy-CFN)
 * [Customization](#Customization)
 * [Post Deployment](#Post-Deployment)
   * [Run a script](#run-a-script)

@@ -12,7 +12,7 @@ echo "Change it in the script if you use a different name."
 echo "================================================================================================"
 
 # 0. download the project if run the script from AWS CloudShell
-if [ -n "$1" ]; then
+if [ $# -eq 0 ]; then
 	echo "Download github project"
 	git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
 	cd sql-based-etl-on-amazon-eks
