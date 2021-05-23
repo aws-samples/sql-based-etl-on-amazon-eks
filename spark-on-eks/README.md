@@ -9,7 +9,8 @@ A project for a solution - SQL based ETL with a declarative framework powered by
 
 #### Table of Contents
 * [Prerequisites](#Prerequisites) 
-* [Deploy CloudFormation](#Launch-the-CFN)
+* [Deploy CFN](#Launch-the-CFN)
+* [Customization](#Customization)
 * [Post Deployment](#Post-Deployment)
   * [Run a script](#run-a-script)
   * [Test ETL job in Arc Jupyter](#test-etl-job-in-Jupyter)
@@ -28,16 +29,15 @@ A project for a solution - SQL based ETL with a declarative framework powered by
 1. AWS CLI is configured to communicate with services in your deployment account. Either set your profile by `export AWS_PROFILE=<your_aws_profile>` , or run `aws configure`.
 2. [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is available in your deployment **region**. Otherwise, run all post deployment commands in a local computer.
 
-## Download the project
+## Deploy CFN
+
+The provisining takes about 30 minutes to complete. Download the project first:
 
 ```bash
 git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
-
+cd sql-based-etl-on-amazon-eks
 ```
 
-## Launch the CFN
-
-The provisining takes about 30 minutes to complete. 
 
   |   Region  |   Launch Template |
   |  ---------------------------   |   -----------------------  |
@@ -45,7 +45,9 @@ The provisining takes about 30 minutes to complete.
   **US East (N. Virginia)**| [![Deploy to AWS](images/00-deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://blogpost-sparkoneks-us-east-1.s3.amazonaws.com/blog/v1.0.0/SparkOnEKS.template) 
 
 * Option1: Deploy with default (recommended). Use the following script to deploy in a different region. 
-* Option2: Fill in the parameter `jhubuser` if you want to setup a customized username for Jupyter login. 
+
+* Option2: Fill in the parameter `jhubuser` if you want to setup a customized username for Jupyter login.
+ 
 * Option3: If ETL your own data, input the parameter `datalakebucket` with your S3 bucket. 
 `NOTE: the S3 bucket must be in the same region as the deployment region.`
 
@@ -87,14 +89,14 @@ Go to AWS CloudShell:[[link to AWS CloudShell]](https://console.aws.amazon.com/c
  Or
 run it on your computer:
 ```bash
-./deployment/post-deployment.sh 'run-local'
+./deployment/post-deployment.sh 'local'
 ```
 
 [*^ back to top*](#Table-of-Contents)
 ### Test ETL job in Jupyter
-1. Login with the details provided by the script above.
+1. Login with the details above.
 
-NOTE: The notebook session refreshes every 30 minutes. You may lose your work if it hasn't saved on time. The notebook allows you to download, and the capability is configurable, ie. you can disable it in order to improve your data security.
+NOTE: The notebook session refreshes every 30 minutes. You may lose your work if it hasn't saved on time. The notebook allows you to download files, and is configurable, ie. you can disable it in order to improve your data security.
 
 2. Open a sample job `sql-based-etl/source/example/notebook/scd2-job.ipynb` on your Jupyter notebook instance. The job outputs a table to support the [Slowly Changing Dimension Type 2](https://www.datawarehouse4u.info/SCD-Slowly-Changing-Dimensions.html) business need.
 
