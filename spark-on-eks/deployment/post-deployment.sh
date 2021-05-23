@@ -13,7 +13,7 @@ echo "==========================================================================
 
 # 0. download the project if run the script from AWS CloudShell
 if [ $# -eq 0 ]; then
-	echo "Download github project"
+	echo -e "\nDownload github project"
 	git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
 	cd sql-based-etl-on-amazon-eks
 fi
@@ -21,18 +21,18 @@ fi
 # 1. update ECR endpoint in example jobs
 export ECR_IMAGE_URI=$(aws cloudformation describe-stacks --stack-name $stack_name \
 --query "Stacks[0].Outputs[?OutputKey=='IMAGEURI'].OutputValue" --output text)
-echo "Update ECR url in sample job files"
+echo -e "\nUpdate ECR url in sample job files"
 sed -i.bak "s|{{ECR_URL}}|${ECR_IMAGE_URI}|g" source/example/*.yaml
 
 find . -type f -name "*.bak" -delete
 
 # 2. install k8s command tools 
-echo "install kubectl tool..."
+echo -e "\ninstall kubectl tool..."
 curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
 chmod +x kubectl
 mkdir -p $HOME/bin && mv kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
 
-echo "install argoCLI tool..."
+echo -e "\ninstall argoCLI tool..."
 VERSION=v2.12.9
 sudo curl -sLO https://github.com/argoproj/argo/releases/download/${VERSION}/argo-linux-amd64.gz && gunzip argo-linux-amd64.gz
 chmod +x argo-linux-amd64 && sudo mv ./argo-linux-amd64 /usr/local/bin/argo
@@ -40,7 +40,7 @@ argo version --short
 
 # 3. connect to the EKS newly created
 echo `aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?starts_with(OutputKey,'eksclusterEKSConfig')].OutputValue" --output text` | bash
-echo "test EKS connection..."
+echo -e "\ntest EKS connection..."
 kubectl get svc
 
 # 4. get Jupyter Hub login
@@ -51,6 +51,6 @@ echo -e "\n=============================== JupyterHub Login ====================
 echo -e "Note: Use your own USERNAME, only if it was specified at deployment."
 echo -e "\n\nJUPYTER_URL: $LOGIN_URI"
 echo "USERNAME: sparkoneks" 
-echo "PASSWORD: $JHUB_PWD\n"
+echo "PASSWORD: $JHUB_PWD"
 echo "================================================================================================"
 
