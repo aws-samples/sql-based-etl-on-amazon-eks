@@ -163,16 +163,14 @@ echo -e "\nLogin token:\n$LOGIN\n"
 [*^ back to top*](#Table-of-Contents)
 ### Submit ETL job via Argo CLI
 
-To demonstrate Argo's orchestration advantage with a job dependency feature, the single notebook was broken down into 3 files, ie. 3 ETL jobs, stored in [deployment/app_code/job/](deployment/app_code/job). It only takes about 4 minutes to complete all jobs.
+To demonstrate Argo's orchestration advantage with a job dependency feature, the single notebook was broken down into 3 files, ie. 3 ETL jobs, stored in [deployment/app_code/job/](deployment/app_code/job). It only takes about 5 minutes to complete all jobs.
 
 1. Submit the job and check the progress in Argo web console.
 ```bash
-app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS \
---query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
+app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
 argo submit source/example/scd2-job-scheduler.yaml -n spark --watch -p codeBucket=$app_code_bucket
 ```
-
-![](source/images/3-argo-job-dependency.png)
+![](images/3-argo-job-dependency.png)
 
 2. Query the table in [Athena](https://console.aws.amazon.com/athena/) to see if it has the same outcome as the test in Jupyter earlier. 
 
@@ -195,10 +193,11 @@ In this exmaple, we will reuse the Arc docker image, because it contains the lat
 [*^ back to top*](#Table-of-Contents)
 #### Execute a PySpark job
 
-Submit the Spark job to EKS as usual. The pySpark application is stored [deployment/app_code/job/wordcount.py](deployment/app_code/job/wordcount.py)
+Submit a PySpark job [deployment/app_code/job/wordcount.py](deployment/app_code/job/wordcount.py) to EKS as usual.
 ```bash
 # get the s3 bucket from CFN output
 app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
+
 kubectl create -n spark configmap special-config --from-literal=codeBucket=$app_code_bucket
 kubectl apply -f source/example/native-spark-job-scheduler.yaml
 ```
@@ -217,13 +216,15 @@ kubectl apply -f source/example/native-spark-job-scheduler.yaml
 
 [*^ back to top*](#Table-of-Contents)
 #### Self-recovery test
-In Spark world, we know the driver is a single point of failure of a Spark application. If driver dies, all other linked components will be discarded too. Outside of Kubernetes, it requires extra effort to set up a job rerun, in order to provide the fault tolerance capability, however It is much simpler in Amazon EKS. 
+In Spark world, we know the driver is a single point of failure of a Spark application. If driver dies, all other linked components will be discarded too. Outside of Kubernetes, it requires extra effort to set up a job rerun, in order to provide the fault tolerance capability. However it is much simpler in Amazon EKS. Just few lines of retry definition without coding.
+
+![](images/4-k8s-retry.png)
 
 The pySpark job takes approx. 10 minutes to finish. Let's test the self-recovery against the active Spark cluster.
 
 1. Driver test - manually kill the EC2 instance running your Spark driver:
 ```bash
-# find the EC2 host name, replace the placeholder below
+# find the EC2 name, replace the placeholder below
 kubectl describe pod word-count-driver -n spark
 ```
 ```bash
@@ -231,14 +232,12 @@ kubectl delete node <ec2_host_name>
 # has the driver come back?
 kubectl get pod -n spark
 ```
-See the demonstration below, which simulates the Spot interruption scenario: 
+See the demonstration simulating a Spot interruption scenario: 
 ![](images/driver_interruption_test.gif)
 
 2. Executor test - kill one of executors: 
 ```bash
-# get an executor pod name
-kubectl get pod -n spark
-# replace the example pod name by yours
+# replace the placeholder
 kubectl delete -n spark pod <example:amazon-reviews-word-count-51ac6d777f7cf184-exec-1> --force
 # has it come back with a different number suffix? 
 kubectl get pod -n spark
