@@ -158,7 +158,8 @@ echo -e "\nLogin token:\n$LOGIN\n"
                 --ETL_CONF_JOB_URL=https://raw.githubusercontent.com/tripl-ai/arc-starter/master/examples/kubernetes"
   ```
   ![](images/3-argo-log.png)
-
+  
+[*^ back to top*](#Table-of-Contents)
 ### Submit ETL job via Argo CLI
 
 To demonstrate Argo's orchestration advantage with a job dependency feature, the single notebook was broken down into 3 files, ie. 3 ETL jobs, stored in [deployment/app_code/job/](deployment/app_code/job). It only takes about 4 minutes to complete all jobs.

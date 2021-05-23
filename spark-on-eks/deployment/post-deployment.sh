@@ -15,8 +15,6 @@ echo "==========================================================================
 if [ $# -eq 0 ]; then
 	echo -e "\nDownload github project"
 	git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
-	cd sql-based-etl-on-amazon-eks
-	cd spark-on-eks
 fi
 
 # 1. update ECR endpoint in example jobs
@@ -55,3 +53,5 @@ echo "USERNAME: sparkoneks"
 echo "PASSWORD: $JHUB_PWD"
 echo "================================================================================================"
 
+# 5. go to the project folder
+cd sql-based-etl-on-amazon-eks/spark-on-eks

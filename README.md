@@ -12,7 +12,7 @@ The sample provides two ways of running the solution shown in the architecture d
 ![](/spark-on-eks/images/run_jupyter.gif)
 
 
-### Test Spark Driver self-recovery
+### Test Spark Driver self-recovery (100% spot)
 ![](/spark-on-eks/images/driver_interruption_test.gif)
 
 ### Submit Spark job by Argo tool
