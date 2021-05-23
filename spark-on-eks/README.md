@@ -82,6 +82,7 @@ echo -e "\nIn web browser, paste the URL to launch the template: https://console
 Go to AWS CloudShell:[[link to AWS CloudShell]](https://console.aws.amazon.com/cloudshell/), select your **REGION** the solution was deployed. Run the command:
  ```bash
  curl https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/spark-on-eks/deployment/post-deployment.sh | bash
+ cd sql-based-etl-on-amazon-eks/spark-on-eks
  ```
  Or
 run it on your computer:

@@ -53,5 +53,3 @@ echo "USERNAME: sparkoneks"
 echo "PASSWORD: $JHUB_PWD"
 echo "================================================================================================"
 
-# 5. go to the project folder
-cd sql-based-etl-on-amazon-eks/spark-on-eks
