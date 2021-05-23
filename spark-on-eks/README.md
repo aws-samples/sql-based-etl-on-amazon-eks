@@ -15,7 +15,7 @@ A project for a solution - SQL based ETL with a declarative framework powered by
   * [Run a script](#run-a-script)
   * [Test job in Jupyter notebook](#test-job-in-Jupyter-notebook)
   * [Submit job on Argo UI](#Submit-job-on-argo-ui)
-  * [Submit job via Argo CLI](#Submit-job-via-Argo-CLI)
+  * [Submit job via Argo CLI](#Submit-job-via-argo-cli)
   * [Submit a vanilla Spark job](#Submit-a-vanilla-Spark-job-with-Spark-Operator)
     * [Execute a PySpark job](#Execute-a-PySpark-job)
     * [Self-recovery test](#Self-recovery-test)
@@ -161,18 +161,19 @@ echo -e "\nLogin token:\n$LOGIN\n"
   ![](images/3-argo-log.png)
   
 [*^ back to top*](#Table-of-Contents)
-### Submit ETL job via Argo CLI
+### Submit job via Argo CLI
 
 To demonstrate Argo's orchestration advantage with a job dependency feature, the single notebook was broken down into 3 files, ie. 3 ETL jobs, stored in [deployment/app_code/job/](deployment/app_code/job). It only takes about 5 minutes to complete all jobs.
 
-1. Submit the job and check the progress in Argo web console.
+1. Make sure you at the right directory, ie. in `spark-on-eks`. 
+2. Submit the job and check the progress in Argo web console.
 ```bash
 app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
 argo submit source/example/scd2-job-scheduler.yaml -n spark --watch -p codeBucket=$app_code_bucket
 ```
 ![](images/3-argo-job-dependency.png)
 
-2. Query the table in [Athena](https://console.aws.amazon.com/athena/) to see if it has the same outcome as the test in Jupyter earlier. 
+3. Query the table in [Athena](https://console.aws.amazon.com/athena/) to see if it has the same outcome as the test in Jupyter earlier. 
 
 ```sql
 SELECT * FROM default.contact_snapshot WHERE id=12

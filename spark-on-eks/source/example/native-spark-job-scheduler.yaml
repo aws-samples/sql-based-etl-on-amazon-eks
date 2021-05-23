@@ -15,7 +15,7 @@ spec:
   sparkConf:
     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
     "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
-    "spark.kubernetes.allocation.batch.size": "15" 
+    "spark.kubernetes.allocation.batch.size": "10" 
     "spark.io.encryption.enabled": "true"
     "spark.kubernetes.local.dirs.tmpfs": "true"
   volumes:
@@ -31,9 +31,9 @@ spec:
   restartPolicy:
     type: OnFailure
     onFailureRetries: 3
-    onFailureRetryInterval: 5
+    onFailureRetryInterval: 10
     onSubmissionFailureRetries: 5
-    onSubmissionFailureRetryInterval: 20          
+    onSubmissionFailureRetryInterval: 5         
   driver:
     # driver run on Spot
     affinity:
