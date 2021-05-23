@@ -79,15 +79,15 @@ echo -e "\nIn web browser, paste the URL to launch the template: https://console
 
 ### Run a script
 
-Go to AWS CloudShell:[link to AWS CloudShell](https://console.aws.amazon.com/cloudshell/), select your **region** the solution was deployed. Run the command:
+Go to AWS CloudShell:[[link to AWS CloudShell]](https://console.aws.amazon.com/cloudshell/), select your **region** the solution was deployed. Run the command:
 
  ```bash
- curl https://raw.githubusercontent.com/awslabs/sql-based-etl-with-apache-spark-on-amazon-eks/main/deployment/post-deployment.sh | bash
+ curl https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/spark-on-eks/deployment/post-deployment.sh | bash
  ```
  Or
 run it on your computer:
 ```bash
-./deployment/post-deployment.sh
+./deployment/post-deployment.sh 'run-local'
 ```
 
 [*^ back to top*](#Table-of-Contents)
