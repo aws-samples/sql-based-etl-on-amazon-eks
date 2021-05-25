@@ -38,7 +38,7 @@ class EksBaseAppConst(core.Construct):
             "{{cluster_name}}": eks_cluster.cluster_name, 
         }
         eks_cluster.add_helm_chart('ClusterAutoScaler',
-            chart='cluster-autoscaler-chart',
+            chart='cluster-autoscaler',
             repository='https://kubernetes.github.io/autoscaler',
             release='nodescaler',
             create_namespace=False,

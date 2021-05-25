@@ -54,14 +54,13 @@ cd sql-based-etl-on-amazon-eks
 
 Build your own solution on top of the project, for example reconfigure the Jupyter notebook, then generate the CFN in your region: 
 ```bash
-# go to the project directory
-cd spark-on-eks
-
 export BUCKET_NAME_PREFIX=<your_bucket_name> # bucket where customized code will reside
 export AWS_REGION=<your_region>
 export SOLUTION_NAME=blog
 export VERSION=v1.0.0 # version number for the customized code
 
+# go to the project directory
+cd spark-on-eks
 ./deployment/build-s3-dist.sh $BUCKET_NAME_PREFIX $SOLUTION_NAME $VERSION
 
 # create the bucket where customized code will reside
