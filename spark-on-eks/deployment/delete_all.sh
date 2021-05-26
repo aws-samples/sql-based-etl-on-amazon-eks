@@ -10,21 +10,13 @@ if ! [ -z "$code_bucket" ]
 then	
 	echo "Delete vpc log from asset S3 Bucket"
 	aws s3 rm ${code_bucket}/vpcRejectlog/
-	aws s3 rm ${code_bucket}/BuildArcDockerImage/
-fi
-
-repo_name=$(aws ecr describe-repositories --query 'repositories[?starts_with(repositoryName,`'$lower_stack_name'`)==`true`]'.repositoryName --output text)
-if ! [ -z "$repo_name" ] 
-then
-	echo "Delete Arc docker image from ECR"
-	aws ecr delete-repository --repository-name $repo_name --force
 fi
 
 echo "Drop a Delta Lake table default.contact_snapshot"
 accountId=$(aws sts get-caller-identity --query Account --output text)
 tbl1=$(aws glue get-tables --database-name 'default' --query 'TableList[?starts_with(Name,`contact_snapshot`)==`true`]'.Name --output text)
 tbl2=$(aws glue get-tables --database-name 'default' --query 'TableList[?starts_with(Name,`contact_snapshot_jhub`)==`true`]'.Name --output text)
-if ! [ -z "$tbl1" ] 
+if ! [ -z "$tbl1" ]
 then
 	aws athena start-query-execution --query-string "DROP TABLE default.contact_snapshot" --result-configuration OutputLocation=s3://aws-athena-query-results-$accountId
 fi
@@ -34,7 +26,6 @@ then
 fi
 
 echo "Delete ALB"
-# delete ALB
 argoALB=$(aws elbv2 describe-load-balancers --query 'LoadBalancers[?starts_with(DNSName,`k8s-argo`)==`true`].LoadBalancerArn' --output text)
 jhubALB=$(aws elbv2 describe-load-balancers --query 'LoadBalancers[?starts_with(DNSName,`k8s-jupyter`)==`true`].LoadBalancerArn' --output text)
 
