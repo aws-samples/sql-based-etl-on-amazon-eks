@@ -125,7 +125,7 @@ LOGIN=$(argo auth token)
 echo -e "\nArgo website:\n$ARGO_URL\n"
 echo -e "\nLogin token:\n$LOGIN\n"
 ```
-3. Click `SUBMIT NEW WORKFLOW` button, replace content by the followings, then `SUBMIT`. Click a pod (dot) to check the job status and application logs.
+3. Select the `SUBMIT NEW WORKFLOW` button. Go to `Edit using full workflow options`, and replace the replace content by the followings. Finally, click `CREATE`. Select a pod (dot) to check the job status and application logs.
 
   ```yaml
   apiVersion: argoproj.io/v1alpha1
@@ -143,8 +143,7 @@ echo -e "\nLogin token:\n$LOGIN\n"
           - name: step1-query
             templateRef:
               name: spark-template
-              template: sparkLocal
-              clusterScope: true   
+              template: sparkLocal  
             arguments:
               parameters:
               - name: jobId

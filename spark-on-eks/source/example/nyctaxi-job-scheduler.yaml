@@ -16,8 +16,7 @@ spec:
         - name: step1-query
           templateRef:
             name: spark-template
-            template: sparkLocal
-            clusterScope: true   
+            template: sparkLocal 
           arguments:
             parameters:
             - name: jobId

@@ -1,7 +1,7 @@
 ** cdk-solution-init-pkg; version 1.0.0 -- https://aws.amazon.com/solutions/ -- Apahe-2.0
 ** Arc -- v3.8.2_spark_3.0.2_scala_2.12_hadoop_3.2.0_1.2.0 -- https://arc.tripl.ai/ -- MIT License
 ** Arc Jupyter - v3.12.1_scala_2.12_hadoop_3.2.0_1.5.0 -- https://github.com/tripl-ai/arc-jupyter --  MIT License
-** argo -- v2.12.5 -- https://github.com/argoproj/argo-helm -- Apache-2.0
+** argo -- v3.0.2 -- https://github.com/argoproj/argo-helm -- Apache-2.0
 ** ** JupyterHub -- v0.11.1 -- https://jupyterhub.github.io/helm-chart/ -- revised BSD license
 aws-cdk -- v1.96.0 -- https://github.com/aws/aws-cdk -- Apache-2.0
 ** k8s-cluster-autoscaler -- v1.19.1 -- https://github.com/kubernetes/autoscaler -- Apache-2.0

@@ -1,5 +1,8 @@
-images:
-  tag: v2.12.5
+controller:
+  workflowNamespaces:
+    - argo
+init:
+  serviceAccount: arcjob    
 workflow:
   namespace: spark
   serviceAccount:
@@ -17,8 +20,3 @@ server:
       alb.ingress.kubernetes.io/target-type: ip
       alb.ingress.kubernetes.io/success-codes: 200,301,302
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 2746}]'
-    hosts: 
-      - ""
-    paths:
-      - serviceName: "argo-server"
-        servicePort: "2746"

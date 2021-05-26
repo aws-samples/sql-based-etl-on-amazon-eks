@@ -1,5 +1,5 @@
 apiVersion: argoproj.io/v1alpha1
-kind: ClusterWorkflowTemplate
+kind: WorkflowTemplate
 metadata:
   name: spark-template
 spec:
@@ -14,7 +14,7 @@ spec:
       - name: jobId
       - name: configUri
       - name: image
-        value: ghcr.io/tripl-ai/arc:arc_3.8.2_spark_3.0.2_scala_2.12_hadoop_3.2.0_1.3.0
+        value: ghcr.io/tripl-ai/arc:latest
       - name: pullPolicy
         value: "Always"    
       - name: executorInstances
@@ -101,7 +101,7 @@ spec:
       - name: jobId
       - name: configUri
       - name: image
-        value: ghcr.io/tripl-ai/arc:arc_3.8.2_spark_3.0.2_scala_2.12_hadoop_3.2.0_1.3.0
+        value: ghcr.io/tripl-ai/arc:latest
       - name: pullPolicy
         value: "Always"    
       - name: executorInstances
@@ -188,7 +188,7 @@ spec:
       - name: jobId
       - name: configUri
       - name: image
-        value: ghcr.io/tripl-ai/arc:arc_3.8.2_spark_3.0.2_scala_2.12_hadoop_3.2.0_1.3.0
+        value: ghcr.io/tripl-ai/arc:latest
       - name: pullPolicy
         value: "Always"  
       - name: executorInstances
@@ -275,7 +275,7 @@ spec:
       - name: jobId
       - name: configUri
       - name: image
-        value: ghcr.io/tripl-ai/arc:arc_3.8.2_spark_3.0.2_scala_2.12_hadoop_3.2.0_1.3.0
+        value: ghcr.io/tripl-ai/arc:latest
       - name: executorInstances
         value: "1"
       - name: executorCores

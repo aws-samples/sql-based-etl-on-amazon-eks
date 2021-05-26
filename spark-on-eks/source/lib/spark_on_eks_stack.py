@@ -105,9 +105,10 @@ class SparkOnEksStack(core.Stack):
         # 4. Install ETL orchestrator - Argo
         # can be replaced by other workflow tool, ie. Airflow
         argo_install = eks_cluster.my_cluster.add_helm_chart('ARGOChart',
-            chart='argo',
+            chart='argo-workflows',
             repository='https://argoproj.github.io/argo-helm',
             release='argo',
+            version='0.1.4',
             namespace='argo',
             create_namespace=True,
             values=load_yaml_local(source_dir+'/app_resources/argo-values.yaml')
@@ -134,7 +135,7 @@ class SparkOnEksStack(core.Stack):
             cluster=eks_cluster.my_cluster,
             json_path='..status.loadBalancer.ingress[0].hostname',
             object_type='ingress.networking',
-            object_name='argo-server',
+            object_name='argo-argo-workflows-server',
             object_namespace='argo'
         )
         self._argo_alb.node.add_dependency(argo_install)
