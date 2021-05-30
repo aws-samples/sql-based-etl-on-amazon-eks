@@ -122,10 +122,11 @@ kubectl get svc && argo
 ```bash
 ARGO_URL=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='ARGOURL'].OutputValue" --output text)
 LOGIN=$(argo auth token)
-echo -e "\nArgo website:\n$ARGO_URL\n"
-echo -e "\nLogin token:\n$LOGIN\n"
+echo -e "\nArgo website:\n$ARGO_URL\n" && echo -e "Login token:\n$LOGIN\n"
 ```
-3. Select the `SUBMIT NEW WORKFLOW` button. Go to `Edit using full workflow options`, and replace the replace content by the followings. Finally, click `CREATE`. Select a pod (dot) to check the job status and application logs.
+3. Click on `Workflows` side menu then `SUBMIT NEW WORKFLOW` button. 
+![](images/3-argo-sidemenu.png)
+4. Go to `Edit using full workflow options`, and replace the content by the followings. Finally, click `CREATE`. Select a pod (dot) to check the job status and application logs.
 
   ```yaml
   apiVersion: argoproj.io/v1alpha1
@@ -236,8 +237,8 @@ See the demonstration simulating a Spot interruption scenario:
 
 2. Executor test - when all executors' status is running, kill one of them: 
 ```bash
-# replace the placeholder
-kubectl delete -n spark pod <example:amazon-reviews-word-count-51ac6d777f7cf184-exec-1> --force
+exec_name=$(kubectl get pod -n spark | grep "exec-1" | awk '{print $1}')
+kubectl delete -n spark pod $exec_name --force
 # has it come back with a different number suffix? 
 kubectl get pod -n spark
 ```
@@ -254,7 +255,7 @@ Once the job starts, you will see your Spark cluster scales from 0 to 10 executo
 
 The auto-scaling is configured to be balanced across two AZs. Depending on your business requirement, you can fit the ETL job into a single AZ if needed.
 ```bash
-kubectl get node --label-columns=lifecycle,topology.kubernetes.io/zone
+kubectl get node --label-columns=eks.amazonaws.com/capacityType,topology.kubernetes.io/zone
 kubectl get pod -n spark
 ```
 ![](images/4-auto-scaling.png)
