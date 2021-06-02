@@ -24,12 +24,12 @@ chmod +x kubectl
 mkdir -p $HOME/bin && mv kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
 
 echo "================================================================================================"
-echo " Installing argoCLI tool on Mac ..."
+echo " Installing argoCLI tool on Linux ..."
 echo " Check out https://github.com/argoproj/argo-workflows/releases for other OS type installation."
 echo "================================================================================================"
 VERSION=v3.0.2
-sudo curl -sLO https://github.com/argoproj/argo/releases/download/${VERSION}/argo-darwin-amd64.gz && gunzip argo-darwin-amd64.gz
-chmod +x argo-darwin-amd64 && sudo mv ./argo-darwin-amd64 /usr/local/bin/argo
+sudo curl -sLO https://github.com/argoproj/argo/releases/download/${VERSION}/argo-linux-amd64.gz && gunzip argo-linux-amd64.gz
+chmod +x argo-linux-amd64 && sudo mv ./argo-linux-amd64 /usr/local/bin/argo
 argo version --short
 
 # 3. connect to the EKS newly created
