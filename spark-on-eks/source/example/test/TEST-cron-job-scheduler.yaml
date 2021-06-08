@@ -50,6 +50,8 @@ spec:
           --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
           --conf spark.hadoop.fs.s3a.fast.upload=true \
           --conf spark.hadoop.fs.s3a.aws.credentials.provider=com.amazonaws.auth.WebIdentityTokenCredentialsProvider \
+          # --conf spark.kubernetes.driver.podTemplateFile='s3://$(BUCKET_PARAM)/app_code/job/driver-pod-template.yaml' \
+          # --conf spark.kubernetes.executor.podTemplateFile='s3://$(BUCKET_PARAM)/app_code/job/executor-pod-template.yaml' \
           --conf spark.kubernetes.authenticate.driver.serviceAccountName=nativejob \
           "s3a://{{codeBucket}}/app_code/job/wordcount.py" \
           "s3a://{{codeBucket}}/app_code/output/native"
