@@ -245,14 +245,19 @@ Go to [Spot Request console](https://console.aws.amazon.com/ec2sp/v2/) -> Saving
 
 The job ends up with 20 Spark executors/pods on 7 spot EC2 instances, approx. 3 executors per EC2 spot instance. It takes 10 minutes to complete. 
 
-Once the job starts, you will see your Spark cluster scales from 0 to 10 executors. Eventually, the Spark cluster lands with 20 executors, driven by the DynamicAllocation capability in Spark.
+Once the job starts, you will see the scaling is triggered instantly. It creates a Spark cluster from 0 to 10 executors. Eventually, it lands to 20 executors, driven by the Dynamic Resource Allocation feature in Spark.
 
-The auto-scaling is configured to be balanced across two AZs. Depending on your business requirement, you can fit the ETL job into a single AZ if needed.
+The auto-scaling is configured to be balanced across two AZs.
 ```bash
 kubectl get node --label-columns=eks.amazonaws.com/capacityType,topology.kubernetes.io/zone
 kubectl get pod -n spark
 ```
 ![](images/4-auto-scaling.png)
+
+If you are concerned about the job performance, simply fit it into a single AZ by adding the Spark Config to the job submit: 
+```yaml
+--conf spark.kubernetes.node.selector.topology.kubernetes.io/zone=<availability zone>
+```
 
 [*^ back to top*](#Table-of-Contents)
 ## Useful Commands
