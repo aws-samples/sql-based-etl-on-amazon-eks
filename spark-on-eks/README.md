@@ -12,7 +12,7 @@ A project for a solution - SQL based ETL with a declarative framework powered by
 * [Deploy CFN](#Deploy-CFN)
 * [Customization](#Customization)
 * [Post Deployment](#Post-Deployment)
-  * [Run a script](#run-a-script)
+  * [Install command tool](#Install-command-tool)
   * [Test job in Jupyter notebook](#test-job-in-Jupyter-notebook)
   * [Submit job on Argo UI](#Submit-job-on-argo-ui)
   * [Submit job via Argo CLI](#Submit-job-via-argo-cli)
@@ -26,8 +26,8 @@ A project for a solution - SQL based ETL with a declarative framework powered by
 
 ## Prerequisites 
 
-* [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is available in your deployment **region**. Otherwise, run use your local computer to try out the sample solution.
-* The sample code is downloaded either to your AWS Cloudshell console or your computer.
+* [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is available in your deployment **region**. Otherwise, use your computer to run commands.
+* The project is downloaded either to your AWS Cloudshell console or your computer.
 ```bash
 git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
 cd sql-based-etl-on-amazon-eks
@@ -35,23 +35,23 @@ cd sql-based-etl-on-amazon-eks
 
 ## Deploy CFN
 
-The provisioning takes about 30 minutes to complete.
+**Deployment Time**: about 30 minutes
 
   |   Region  |   Launch Template |
   |  ---------------------------   |   -----------------------  |
   |  ---------------------------   |   -----------------------  |
   **US East (N. Virginia)**| [![Deploy to AWS](images/00-deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://blogpost-sparkoneks-us-east-1.s3.amazonaws.com/blog/v1.0.0/SparkOnEKS.template) 
 
-* Option1: Deploy with default (recommended). Use the following script to deploy in a different region. 
+* Option1: Deploy with default (recommended). Check out the **Customization** session to deploy in a different region. 
 
-* Option2: Fill in the parameter `jhubuser` if you want to setup a customized username for Jupyter login.
+* Option2: Fill in the parameter `jhubuser` if use your choice of username to login JupyterHub.
  
 * Option3: If ETL your own data, input the parameter `datalakebucket` with your S3 bucket. 
 `NOTE: the S3 bucket must be in the same region as the deployment region.`
 
 ## Customization
 
-Build your own solution on top of the project, for example reconfigure the Jupyter notebook, or regenerate the CFN for your region: 
+Build your own solution on top of the project, for example reconfigure the Jupyter notebook, or regenerate the CloudFormation for your region: 
 ```bash
 export BUCKET_NAME_PREFIX=<your_bucket_name> # bucket where customized code will reside
 export AWS_REGION=<your_region>
@@ -75,7 +75,7 @@ echo -e "\nIn web browser, paste the URL to launch the template: https://console
 [*^ back to top*](#Table-of-Contents)
 ## Post-deployment
 
-### Run a script
+### Install command tool
 ```bash
 cd spark-on-eks
 ./deployment/post-deployment.sh
