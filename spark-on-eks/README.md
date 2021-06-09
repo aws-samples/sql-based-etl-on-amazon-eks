@@ -111,6 +111,7 @@ kubectl get svc && argo
 ```
 2. Login to Argo website. The authentication token refreshes every 10mins (configurable). Run the script again if timeout.
 ```bash
+# use your CFN stack name if it is different
 ARGO_URL=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='ARGOURL'].OutputValue" --output text)
 LOGIN=$(argo auth token)
 echo -e "\nArgo website:\n$ARGO_URL\n" && echo -e "Login token:\n$LOGIN\n"
@@ -158,7 +159,7 @@ To demonstrate Argo's orchestration advantage with a job dependency feature, the
 1. Make sure you are at the right directory, ie. in `spark-on-eks`. 
 2. Submit the job and check the progress in Argo web console.
 ```bash
-# change the CFN stack name if yours is different
+# change to your CFN stack name if it is different
 app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
 argo submit source/example/scd2-job-scheduler.yaml -n spark --watch -p codeBucket=$app_code_bucket
 ```
@@ -187,7 +188,7 @@ In this example, we will reuse the Arc docker image, because it contains the lat
 
 Submit a PySpark job [deployment/app_code/job/wordcount.py](deployment/app_code/job/wordcount.py) to EKS as usual.
 ```bash
-# get the s3 bucket from CFN output
+# get an s3 bucket from CFN output
 app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
 
 kubectl create -n spark configmap special-config --from-literal=codeBucket=$app_code_bucket
