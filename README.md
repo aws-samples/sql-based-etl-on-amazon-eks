@@ -20,7 +20,8 @@ The sample provides two ways of running the solution shown in the architecture d
 
 
 ## Prerequisite
-1. Python 3.6 or later. You can find information about downloading and installing Python [here](https://www.python.org/downloads/).
+Running the sample solution on a local machine, you should have the following prerequisites:
+1. Python 3.6 or later. Download Python [here](https://www.python.org/downloads/).
 2. AWS CLI version 1.
   Windows: [MSI installer](https://docs.aws.amazon.com/cli/latest/userguide/install-windows.html#install-msi-on-windows)
   Linux, macOS or Unix: [Bundled installer](https://docs.aws.amazon.com/cli/latest/userguide/install-macos.html#install-macosos-bundled)
@@ -28,8 +29,10 @@ The sample provides two ways of running the solution shown in the architecture d
 ```bash
 aws configure
 ```  
+If you don’t want to install anything on your computer, use [AWS CloudShell](https://aws.amazon.com/cloudshell/), a browser-based shell that makes it easy to run scripts with the AWS Command Line Interface (AWS CLI).
 
 ## Clone the project
+Download the sample code either to your computer or to your [AWS CloudShell Console](https://console.aws.amazon.com/cloudshell/home?region=us-east-1).
 
 ```bash
 git clone https://github.com/aws-samples/sql-based-etl-on-amazon-eks.git
@@ -38,9 +41,9 @@ cd sql-based-etl-on-amazon-eks
 
 ## Deploy Infrastructure
 
-The provisining takes about 30 minutes to complete. See the `troubleshooting` section if you have a problem during the deployment. 
+The provisining takes about 30 minutes to complete. See the `troubleshooting` section if you have any problem during the deployment. 
 
-The sample provides two options to submit ETL jobs. See the detailed deployment instruction:
+The example solution provides two options to submit ETL jobs. See the detailed deployment instruction:
 
 1. [Spark on EKS](/spark-on-eks/README.md)
 2. [EMR on EKS](/emr-on-eks/README.md)
