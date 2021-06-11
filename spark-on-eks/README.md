@@ -83,7 +83,9 @@ cd spark-on-eks
 
 [*^ back to top*](#Table-of-Contents)
 ### Test job in Jupyter notebook
-1. Login with the details from the above script output. Choose the default server size.
+1. Login with the details from the above script output. Or look up from the [Secrets Manager console](https://console.aws.amazon.com/secretsmanager/). 
+
+Use the default server size unless your workload requires more powerful compute.
 
 NOTE: Following the best seucrity practice, the notebook session refreshes every 30 minutes. Login again if that happens. You may lose your work if it hasn't been saved on time. The notebook allows you to download files, and is configurable, ie. you can disable it in order to improve your data security.
 
@@ -107,7 +109,7 @@ SELECT * FROM default.deltalake_contact_jhub WHERE id=12
 
 1. Check your connection in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or on a local computer. If no access to EKS or no argoCLI installed, run the [post-deployment script](#run-a-script) again.
 ```bash
-kubectl get svc && argo
+kubectl get svc && argo version --short
 ```
 2. Login to Argo website. The authentication token refreshes every 10mins (configurable). Run the script again if timeout.
 ```bash
