@@ -4,12 +4,13 @@
 
 #!/bin/bash
 
-export stack_name=SparkOnEKS
+export stack_name="${1:-SparkOnEKS}"
 
-echo "================================================================================================"
-echo "Make sure your CloudFormation stack name $stack_name is correct. "
-echo "Change it in the script if you use a different name."
-echo "================================================================================================"
+echo "========================================================================="
+echo "  Make sure your CloudFormation stack name $stack_name is correct. "
+echo "  If you use a different name, rerun the script with a parameter:"
+echo "      ./deployment/post-deployment.sh <stack_name> "
+echo "========================================================================="
 
 # 1. install k8s command tools 
 echo -e "\ninstall kubectl tool..."
