@@ -4,26 +4,26 @@
 
 export stack_name="${1:-SparkOnEKS}"
 
-code_bucket="s3://"$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
+code_bucket=$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
 if ! [ -z "$code_bucket" ] 
 then	
 	echo "Delete vpc log from asset S3 Bucket"
-	aws s3 rm ${code_bucket}/vpcRejectlog/
+	aws s3 rm s3://${code_bucket}/vpcRejectlog/
 fi
 
 # delete glue tables
 accountId=$(aws sts get-caller-identity --query Account --output text)
 tbl1=$(aws glue get-tables --database-name 'default' --query 'TableList[?starts_with(Name,`contact_snapshot`)==`true`]'.Name --output text)
-tbl2=$(aws glue get-tables --database-name 'default' --query 'TableList[?starts_with(Name,`contact_snapshot_jhub`)==`true`]'.Name --output text)
+tbl2=$(aws glue get-tables --database-name 'default' --query 'TableList[?starts_with(Name,`deltalake_contact_jhub`)==`true`]'.Name --output text)
 if ! [ -z "$tbl1" ] 
 then
 	echo "Drop a Delta Lake table default.contact_snapshot"
-	aws athena start-query-execution --query-string "DROP TABLE default.contact_snapshot" --result-configuration OutputLocation=s3://aws-athena-query-results-$accountId
+	aws athena start-query-execution --query-string "DROP TABLE default.contact_snapshot" --result-configuration OutputLocation=s3://$code_bucket/athena-query-result
 fi
 if ! [ -z "$tbl2" ] 
 then
 	echo "Drop a Delta Lake table default.deltalake_contact_jhub"
-	aws athena start-query-execution --query-string "DROP TABLE default.deltalake_contact_jhub" --result-configuration OutputLocation=s3://aws-athena-query-results-$accountId
+	aws athena start-query-execution --query-string "DROP TABLE default.deltalake_contact_jhub" --result-configuration OutputLocation=s3://$code_bucket/athena-query-result
 fi
 
 argoALB=$(aws elbv2 describe-load-balancers --query 'LoadBalancers[?starts_with(DNSName,`k8s-argo`)==`true`].LoadBalancerArn' --output text)
