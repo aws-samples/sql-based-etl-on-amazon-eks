@@ -32,5 +32,6 @@
     - glue:CreateDatabase
     - glue:CreatePartition
     - glue:UpdatePartition
+    - glue:GetDatabase
     Resource:
       - '*'   

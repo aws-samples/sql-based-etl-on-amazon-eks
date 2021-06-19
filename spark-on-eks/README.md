@@ -16,7 +16,7 @@ A project for a solution - SQL based ETL with a declarative framework powered by
   * [Test job in Jupyter notebook](#test-job-in-Jupyter-notebook)
   * [Submit job on Argo UI](#Submit-job-on-argo-ui)
   * [Submit job via Argo CLI](#Submit-job-via-argo-cli)
-  * [Submit a vanilla Spark job](#Submit-a-vanilla-Spark-job-with-Spark-Operator)
+  * [Submit a native Spark job](#Submit-a-native-Spark-job-with-Spark-Operator)
     * [Execute a PySpark job](#Execute-a-PySpark-job)
     * [Self-recovery test](#Self-recovery-test)
     * [Cost savings with spot instance](#Check-Spot-instance-usage-and-cost-savings)
@@ -174,11 +174,11 @@ SELECT * FROM default.contact_snapshot WHERE id=12
 ``` 
 
 [*^ back to top*](#Table-of-Contents)
-### Submit a vanilla Spark job with Spark Operator
+### Submit a native Spark job with Spark Operator
 
 Previously, we have run the CloudFormation-like ETL job defined in Jupyter notebook. They are powered by the [Arc data framework](https://arc.tripl.ai/). It significantly simplifies and accelerates the Spark application development with zero line of code. 
 
-In this example, we will reuse the Arc docker image, because it contains the latest Spark distribution. Let's run a vanilla Spark job that is defined by k8s's CRD [Spark Operator](https://operatorhub.io/operator/spark-gcp). It saves efforts on DevOps operation, as the way of deploying Spark application follows the same declarative approach in k8s. It is consistent with other business applications CICD deployment processes.
+In this example, we will reuse the Arc docker image, because it contains the latest Spark distribution. Let's run a native Spark job that is defined by k8s's CRD [Spark Operator](https://operatorhub.io/operator/spark-gcp). It saves efforts on DevOps operation, as the way of deploying Spark application follows the same declarative approach in k8s. It is consistent with other business applications CICD deployment processes.
   The example demonstrates:
   * Save cost with [Amazon EC2 Spot instance](https://aws.amazon.com/ec2/spot/) type
   * Dynamically scale a Spark application - via [Dynamic Resource Allocation](https://spark.apache.org/docs/3.0.0-preview/job-scheduling.html#dynamic-resource-allocation)
