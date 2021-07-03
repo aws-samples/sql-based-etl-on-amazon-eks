@@ -28,18 +28,16 @@ chmod +x argo-linux-amd64 && sudo mv ./argo-linux-amd64 /usr/local/bin/argo
 argo version --short
 
 # 2. connect to the EKS newly created
-echo `aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?starts_with(OutputKey,'eksclusterEKSConfig')].OutputValue" --output text` | bash
+echo `aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?starts_with(OutputKey,'eksclusterEKSConfig')].OutputValue" --output text` | bash
 echo -e "\ntest EKS connection..."
 kubectl get svc
 
 # 3. get Jupyter Hub login
 LOGIN_URI=$(aws cloudformation describe-stacks --stack-name $stack_name \
 --query "Stacks[0].Outputs[?OutputKey=='JUPYTERURL'].OutputValue" --output text)
-JHUB_PWD=$(kubectl -n jupyter get secret jupyter-external-secret -o jsonpath="{.data.password}" | base64 --decode)
-echo -e "\n=============================== JupyterHub Login ============================================="
-echo -e "Note: Use your own USERNAME, only if it was specified at deployment."
-echo -e "\n\nJUPYTER_URL: $LOGIN_URI"
-echo "USERNAME: sparkoneks" 
-echo "PASSWORD: $JHUB_PWD"
+SEC_ID=$(aws secretsmanager list-secrets --query "SecretList[?not_null(Tags[?Value=='$stack_name'])].Name" --output text)
+LOGIN=$(aws secretsmanager get-secret-value --secret-id $SEC_ID --query SecretString --output text)
+echo -e "\n=============================== JupyterHub Login =============================================="
+echo -e "\nJUPYTER_URL: $LOGIN_URI"
+echo "LOGIN: $LOGIN" 
 echo "================================================================================================"
-
