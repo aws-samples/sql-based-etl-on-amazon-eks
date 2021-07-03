@@ -52,7 +52,7 @@ proxy:
 singleuser:
   defaultUrl: "/lab"
   nodeSelector:
-    lifecycle: Ec2Spot
+    lifecycle: OnDemand
   image:
     name: ghcr.io/tripl-ai/arc-jupyter
     tag: arc-jupyter_3.13.1_scala_2.12_hadoop_3.2.0_1.4.0
