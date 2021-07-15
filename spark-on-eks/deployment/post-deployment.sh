@@ -23,7 +23,7 @@ echo " Installing argoCLI tool on Linux ..."
 echo " Check out https://github.com/argoproj/argo-workflows/releases for other OS type installation."
 echo "================================================================================================"
 VERSION=v3.0.2
-sudo curl -sLO https://github.com/argoproj/argo/releases/download/${VERSION}/argo-linux-amd64.gz && gunzip argo-linux-amd64.gz
+sudo curl -sLO https://github.com/argoproj/argo-workflows/releases/download/${VERSION}/argo-linux-amd64.gz && gunzip argo-linux-amd64.gz
 chmod +x argo-linux-amd64 && sudo mv ./argo-linux-amd64 /usr/local/bin/argo
 argo version --short
 
