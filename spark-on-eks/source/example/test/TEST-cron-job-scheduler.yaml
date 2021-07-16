@@ -54,5 +54,6 @@ spec:
           # --conf spark.kubernetes.executor.podTemplateFile='s3://$(BUCKET_PARAM)/app_code/job/executor-pod-template.yaml' \
           --conf spark.kubernetes.authenticate.driver.serviceAccountName=nativejob \
           "s3a://{{codeBucket}}/app_code/job/wordcount.py" \
+          "s3a://amazon-reviews-pds/parquet/" \
           "s3a://{{codeBucket}}/app_code/output/native"
   

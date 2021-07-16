@@ -10,7 +10,7 @@ spec:
   image: ghcr.io/tripl-ai/arc:arc_3.10.0_spark_3.0.3_scala_2.12_hadoop_3.2.0_1.0.0
   imagePullPolicy: Always
   mainApplicationFile: "s3a://$(BUCKET_PARAM)/app_code/job/wordcount.py"
-  arguments: ["s3a://$(BUCKET_PARAM)/app_code/output/native"]
+  arguments: ["s3a://amazon-reviews-pds/parquet/","s3a://$(BUCKET_PARAM)/app_code/output/native"]
   sparkVersion: "3.0.3"
   sparkConf:
     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
