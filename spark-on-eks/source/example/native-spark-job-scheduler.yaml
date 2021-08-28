@@ -6,7 +6,7 @@ metadata:
 spec:
   type: Python
   pythonVersion: "3"
-  deployMode: cluster
+  mode: cluster
   image: ghcr.io/tripl-ai/arc:arc_3.10.0_spark_3.0.3_scala_2.12_hadoop_3.2.0_1.0.0
   imagePullPolicy: Always
   mainApplicationFile: "s3a://$(BUCKET_PARAM)/app_code/job/wordcount.py"
