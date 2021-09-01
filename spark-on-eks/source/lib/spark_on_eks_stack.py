@@ -101,6 +101,7 @@ class SparkOnEksStack(core.Stack):
                 multi_resource=True)
         )
         config_hub.node.add_dependency(jhub_install)
+        config_hub.node.add_dependency(app_security)
 
         # 4. Install ETL orchestrator - Argo
         # can be replaced by other workflow tool, ie. Airflow
