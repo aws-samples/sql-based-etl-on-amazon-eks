@@ -4,15 +4,8 @@ from pyspark.sql.functions import *
 import pyspark
 import sys
 
-config = pyspark.SparkConf().setAll([(
-'spark.executor.memory', '4g'), (
-'spark.executor.cores', '2'), (
-'spark.driver.memory','2g'), (
-'spark.cleaner.referenceTracking.cleanCheckpoints', True)])
-
 spark = SparkSession.builder \
   .appName("Spark Structured Streaming from Kafka") \
-  .config(conf=config) \
   .getOrCreate()
 
 sdfRides = spark \
@@ -72,13 +65,14 @@ query = sdfRides.withWatermark("timestamp", "10 seconds") \
 #     .start() \
 #     .awaitTermination()
 
-query.select(to_json(struct("*")).alias("value")) \
+output=query.select(to_json(struct("*")).alias("value")) \
   .selectExpr("CAST(value AS STRING)") \
   .writeStream \
   .outputMode("append") \
   .format("kafka") \
   .option("kafka.bootstrap.servers", sys.argv[1]) \
-  .option("topic", "emreks_output") \
+  .option("topic", sys.argv[3]) \
   .option("checkpointLocation", sys.argv[2]) \
-  .start() \
-  .awaitTermination()
+  .start()
+
+output.awaitTermination()
