@@ -22,6 +22,7 @@ class EksBaseAppConst(core.Construct):
             chart='aws-load-balancer-controller',
             repository='https://aws.github.io/eks-charts',
             release='alb',
+            version='1.2.7',
             create_namespace=False,
             namespace='kube-system',
             values=load_yaml_replace_var_local(source_dir+'/app_resources/alb-values.yaml',
@@ -72,6 +73,7 @@ class EksBaseAppConst(core.Construct):
             chart='spark-operator',
             repository='https://googlecloudplatform.github.io/spark-on-k8s-operator',
             release='spark-operator',
+            version='1.1.6',
             create_namespace=True,
             values=load_yaml_replace_var_local(source_dir+'/app_resources/spark-operator-values.yaml',fields={'':''})
         )
