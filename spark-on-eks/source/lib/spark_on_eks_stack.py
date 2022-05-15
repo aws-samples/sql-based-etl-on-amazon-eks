@@ -1,11 +1,8 @@
 # // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # // SPDX-License-Identifier: MIT-0
 
-from aws_cdk import (
-    core, 
-    aws_eks as eks,
-    aws_secretsmanager as secmger
-)
+from aws_cdk import (Stack, Aws, Fn, CfnParameter, aws_eks as eks,aws_secretsmanager as secmger)
+from constructs import Construct
 from lib.cdk_infra.network_sg import NetworkSgConst
 from lib.cdk_infra.iam_roles import IamConst
 from lib.cdk_infra.eks_cluster import EksConst
@@ -16,7 +13,7 @@ from lib.cdk_infra.spark_permission import SparkOnEksSAConst
 from lib.util.manifest_reader import *
 import json,os
 
-class SparkOnEksStack(core.Stack):
+class SparkOnEksStack(Stack):
 
     @property
     def code_bucket(self):
@@ -30,17 +27,17 @@ class SparkOnEksStack(core.Stack):
     def jhub_url(self):
         return self._jhub_alb.value
 
-    def __init__(self, scope: core.Construct, id: str, eksname: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, eksname: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         source_dir=os.path.split(os.environ['VIRTUAL_ENV'])[0]+'/source'
 
         # Cloudformation input params
-        datalake_bucket = core.CfnParameter(self, "datalakebucket", type="String",
+        datalake_bucket = CfnParameter(self, "datalakebucket", type="String",
             description="Your existing S3 bucket to be accessed by Jupyter Notebook and ETL job. Default: blank",
             default=""
         )
-        login_name = core.CfnParameter(self, "jhubuser", type="String",
+        login_name = CfnParameter(self, "jhubuser", type="String",
             description="Your username login to jupyter hub",
             default="sparkoneks"
         )
@@ -82,20 +79,20 @@ class SparkOnEksStack(core.Stack):
             values=load_yaml_replace_var_local(source_dir+'/app_resources/jupyter-values.yaml', 
                 fields={
                     "{{codeBucket}}": self.app_s3.code_bucket,
-                    "{{region}}": core.Aws.REGION
+                    "{{region}}": Aws.REGION
                 })
         )
         jhub_install.node.add_dependency(base_app.alb_created)
 
         # get Arc Jupyter login from secrets manager
-        name_parts= core.Fn.split('-',jhub_secret.secret_name)
-        name_no_suffix=core.Fn.join('-',[core.Fn.select(0, name_parts), core.Fn.select(1, name_parts)])
+        name_parts= Fn.split('-',jhub_secret.secret_name)
+        name_no_suffix=Fn.join('-',[Fn.select(0, name_parts), Fn.select(1, name_parts)])
         config_hub = eks.KubernetesManifest(self,'JHubConfig',
             cluster=eks_cluster.my_cluster,
             manifest=load_yaml_replace_var_local(source_dir+'/app_resources/jupyter-config.yaml', 
                 fields= {
                     "{{MY_SA}}": app_security.jupyter_sa,
-                    "{{REGION}}": core.Aws.REGION, 
+                    "{{REGION}}": Aws.REGION, 
                     "{{SECRET_NAME}}": name_no_suffix
                 }, 
                 multi_resource=True)

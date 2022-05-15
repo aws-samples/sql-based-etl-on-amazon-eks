@@ -27,7 +27,7 @@
 #  - version-code: version of the package
 
 # Important: CDK global version number
-cdk_version===1.96.0
+cdk_version===2.12.0
 
 # Check to see if the required parameters have been provided:
 if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
@@ -67,6 +67,7 @@ echo "--------------------------------------------------------------------------
 echo "cd $template_dir/deployment/cdk-solution-helper"
 cd $template_dir/deployment/cdk-solution-helper
 echo "npm install"
+npm audit fix --force
 npm install
 
 cd $template_dir
@@ -83,6 +84,7 @@ echo "--------------------------------------------------------------------------
 
 # # Install the global aws-cdk package
 echo "npm install -g aws-cdk@$cdk_version"
+npm audit fix --force
 npm install aws-cdk@$cdk_version
 
 # Run 'cdk synth' to generate raw solution outputs
@@ -102,8 +104,6 @@ echo "--------------------------------------------------------------------------
 # Move outputs from staging to template_dist_dir
 echo "Move outputs from staging to template_dist_dir"
 mv $staging_dist_dir/*.json $template_dist_dir/
-# cp $staging_dist_dir/*.template.json $template_dist_dir/
-# rm *.template.json
 
 # Rename all *.template.json files to *.template
 echo "Rename all *.template.json to *.template"
@@ -114,7 +114,7 @@ done
 
 # Run the helper to clean-up the templates and remove unnecessary CDK elements
 echo "Run the helper to clean-up the templates and remove unnecessary CDK elements"
-echo "node $template_dir/cdk-solution-helper/index"
+echo "node $template_dir/deployment/cdk-solution-helper/index"
 node $template_dir/deployment/cdk-solution-helper/index
 if [ "$?" = "1" ]; then
 	echo "(cdk-solution-helper) ERROR: there is likely output above." 1>&2
@@ -170,7 +170,7 @@ for d in `find . -mindepth 1 -maxdepth 1 -type d`; do
     cd $staging_dist_dir/$fname
 
     # Build the artifcats
-    if ls *.py 1> /dev/null 2>&1; then
+    if ls *.py 1>/dev/null 2>&1; then
         echo "===================================="
         echo "This is Python runtime"
         echo "===================================="
@@ -181,24 +181,23 @@ for d in `find . -mindepth 1 -maxdepth 1 -type d`; do
         python3 -m venv $venv_folder
         source $venv_folder/bin/activate
         pip3 install --upgrade -q $source_dir --target $venv_folder/lib/python3.*/site-packages
-        deactivate
         echo "package python artifact"
-        cd $staging_dist_dir/$fname/$venv_folder/lib/python3.*/site-packages
-        zip -qr9 $staging_dist_dir/$fname.zip .
+        cd $venv_folder/lib/python3.*/site-packages
+        zip -qr9 $staging_dist_dir/$fname.zip . -x "aws_cdk/*"
         echo "zip -r $staging_dist_dir/$fname"
         cd $staging_dist_dir/$fname
         rm -rf $venv_folder
         zip -grq $staging_dist_dir/$fname.zip .
-       
-    elif ls *.js 1> /dev/null 2>&1; then
+    elif ls *.js 1>/dev/null 2>&1; then
         echo "===================================="
         echo "This is Node runtime"
         echo "===================================="
         echo "Clean and rebuild artifacts"
-        npm run clean
+        npm audit fix --force
+        npm run
         npm ci
         if [ "$?" = "1" ]; then
-	        echo "ERROR: Seems like package-lock.json does not exists or is out of sync with package.josn. Trying npm install instead" 1>&2
+            echo "ERROR: Seems like package-lock.json does not exists or is out of sync with package.josn. Trying npm install instead" 1>&2
             npm install
         fi
         # Zip the artifact
@@ -208,7 +207,7 @@ for d in `find . -mindepth 1 -maxdepth 1 -type d`; do
         # Zip the artifact
         echo "zip -r $staging_dist_dir/$fname"
         zip -rq $staging_dist_dir/$fname.zip .
-    fi    
+    fi
 
     cd $staging_dist_dir
     # Copy the zipped artifact from /staging to /regional-s3-assets
@@ -231,7 +230,7 @@ for d in `find . -mindepth 1 -maxdepth 1`; do
     pfname="$(basename -- $d)"
     fname="$(echo $pfname | sed -e 's/asset./asset/g')"
     mv $d $build_dist_dir/$fname
-done    
+done
 
 echo "------------------------------------------------------------------------------"
 echo "[Cleanup] Remove temporary files"

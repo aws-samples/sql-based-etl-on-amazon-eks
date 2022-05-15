@@ -1,18 +1,17 @@
 # // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # // SPDX-License-Identifier: MIT-0
-from aws_cdk import (
-    core
-)
+from aws_cdk import Aws
+from constructs import Construct
 from aws_cdk.aws_eks import ICluster, KubernetesManifest
 from lib.util.manifest_reader import *
 import os
 
-class EksBaseAppConst(core.Construct):
+class EksBaseAppConst(Construct):
     @property
     def alb_created(self):
         return self._alb
 
-    def __init__(self,scope: core.Construct, id: str, eks_cluster: ICluster, **kwargs,) -> None:
+    def __init__(self,scope: Construct, id: str, eks_cluster: ICluster, **kwargs,) -> None:
         super().__init__(scope, id, **kwargs)
 
         source_dir=os.path.split(os.environ['VIRTUAL_ENV'])[0]+'/source'
@@ -27,7 +26,7 @@ class EksBaseAppConst(core.Construct):
             namespace='kube-system',
             values=load_yaml_replace_var_local(source_dir+'/app_resources/alb-values.yaml',
                 fields={
-                    "{{region_name}}": core.Aws.REGION, 
+                    "{{region_name}}": Aws.REGION, 
                     "{{cluster_name}}": eks_cluster.cluster_name, 
                     "{{vpc_id}}": eks_cluster.vpc.vpc_id
                 }
@@ -35,7 +34,7 @@ class EksBaseAppConst(core.Construct):
         )
         # Add Cluster Autoscaler to EKS
         _var_mapping = {
-            "{{region_name}}": core.Aws.REGION, 
+            "{{region_name}}": Aws.REGION, 
             "{{cluster_name}}": eks_cluster.cluster_name, 
         }
         eks_cluster.add_helm_chart('ClusterAutoScaler',
@@ -64,7 +63,7 @@ class EksBaseAppConst(core.Construct):
             namespace='kube-system',
             values=load_yaml_replace_var_local(source_dir+'/app_resources/ex-secret-values.yaml',
                 fields={
-                    '{{region_name}}': core.Aws.REGION
+                    '{{region_name}}': Aws.REGION
                 }
             )
         )

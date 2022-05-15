@@ -1,18 +1,16 @@
 # // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # // SPDX-License-Identifier: MIT-0
 
-from aws_cdk import (
-    core,
-    aws_iam as iam
-)
+from aws_cdk import aws_iam as iam
+from constructs import Construct
 from aws_cdk.aws_secretsmanager import ISecret
 from aws_cdk.aws_eks import ICluster
 from lib.util.manifest_reader import *
 import os
 
-class EksSAConst(core.Construct):
+class EksSAConst(Construct):
 
-    def __init__(self,scope: core.Construct, id:str, eks_cluster: ICluster, secret: ISecret, **kwargs,) -> None:
+    def __init__(self,scope: Construct, id:str, eks_cluster: ICluster, secret: ISecret, **kwargs,) -> None:
         super().__init__(scope, id, **kwargs)
 
 # //************************************v*************************************************************//

@@ -40,7 +40,7 @@ cd sql-based-etl-on-amazon-eks
   |   Region  |   Launch Template |
   |  ---------------------------   |   -----------------------  |
   |  ---------------------------   |   -----------------------  |
-  **US East (N. Virginia)**| [![Deploy to AWS](images/00-deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://blogpost-sparkoneks-us-east-1.s3.amazonaws.com/blog/v1.0.0/SparkOnEKS.template) 
+  **US East (N. Virginia)**| [![Deploy to AWS](images/00-deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://blogpost-sparkoneks-us-east-1.s3.amazonaws.com/blog/v2.0.0/SparkOnEKS.template) 
 
 * Option1: Deploy with default (recommended). Check out the **Customization** session to deploy in a different region. 
 

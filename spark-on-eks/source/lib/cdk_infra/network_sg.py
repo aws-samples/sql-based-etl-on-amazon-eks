@@ -1,12 +1,9 @@
 # // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # // SPDX-License-Identifier: MIT-0
 
-from aws_cdk import (
-    core,
-    aws_ec2 as ec2,
-    aws_s3 as s3
-)
-class NetworkSgConst(core.Construct):
+from aws_cdk import (Tags, aws_ec2 as ec2)
+from constructs import Construct
+class NetworkSgConst(Construct):
 
     @property
     def vpc(self):
@@ -17,7 +14,7 @@ class NetworkSgConst(core.Construct):
     #     return self._eks_efs_sg
 
 
-    def __init__(self,scope: core.Construct, id:str, eksname:str, codebucket: str, **kwargs) -> None:
+    def __init__(self,scope: Construct, id:str, eksname:str, codebucket: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
         
         # //*************************************************//
@@ -25,7 +22,7 @@ class NetworkSgConst(core.Construct):
         # //************************************************//
         # create VPC
         self._vpc = ec2.Vpc(self, 'eksVpc',max_azs=2)
-        core.Tags.of(self._vpc).add('Name', eksname + 'EksVpc')
+        Tags.of(self._vpc).add('Name', eksname + 'EksVpc')
 
         # VPC endpoint security group
         self._vpc_endpoint_sg = ec2.SecurityGroup(self,'EndpointSg',
@@ -33,13 +30,13 @@ class NetworkSgConst(core.Construct):
             description='Security Group for Endpoint',
         )
         self._vpc_endpoint_sg.add_ingress_rule(ec2.Peer.ipv4(self._vpc.vpc_cidr_block),ec2.Port.tcp(port=443))
-        core.Tags.of(self._vpc_endpoint_sg).add('Name','SparkOnEKS-VPCEndpointSg')
+        Tags.of(self._vpc_endpoint_sg).add('Name','SparkOnEKS-VPCEndpointSg')
 
         # Add VPC endpoint 
         self._vpc.add_gateway_endpoint("S3GatewayEndpoint",
                                         service=ec2.GatewayVpcEndpointAwsService.S3,
                                         subnets=[ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
-                                                 ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE)])
+                                                 ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)])
                                                  
         # self._vpc.add_interface_endpoint("EcrDockerEndpoint",service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER, security_groups=[self._vpc_endpoint_sg])
         self._vpc.add_interface_endpoint("CWLogsEndpoint", service=ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,security_groups=[self._vpc_endpoint_sg])
