@@ -55,7 +55,7 @@ singleuser:
     lifecycle: OnDemand
   image:
     name: ghcr.io/tripl-ai/arc-jupyter
-    tag: latest
+    tag: arc-jupyter_3.15.1_scala_2.12_hadoop_3.3.2_1.2.0_null_entrypoint
     pullPolicy: Always
   lifecycleHooks:
     postStart:
@@ -79,8 +79,8 @@ singleuser:
   extraEnv:
     CONF_ALLOW_EXPORT: "true"
     # JAVA_OPTS: -Xmx4G
-    ETL_CONF_DATALAKE_LOC: sparkoneks-appcode291f5ddb-g5mbza4qjf3d
-    ETL_CONF_AWS_REGION: us-east-1
+    ETL_CONF_DATALAKE_LOC: {{codeBucket}}
+    ETL_CONF_AWS_REGION: {{region}}
   storage:
     type: none
   # storage:
@@ -119,5 +119,5 @@ scheduling:
 cull:
   timeout: 1800
 
-debug:
-  enabled: true      
+# debug:
+#   enabled: true      
