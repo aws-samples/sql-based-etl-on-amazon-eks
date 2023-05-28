@@ -37,16 +37,18 @@ class SparkOnEksStack(Stack):
             description="Your existing S3 bucket to be accessed by Jupyter Notebook and ETL job. Default: blank",
             default=""
         )
-        login_name = CfnParameter(self, "jhubuser", type="String",
-            description="Your username login to jupyter hub",
-            default="sparkoneks"
-        )
+        login_name="sparkoneks"
+        # login_name = CfnParameter(self, "jhubuser", type="String",
+        #     description="Your username login to jupyter hub.",
+        #     default="sparkoneks"
+        # )
 
         # Auto-generate a user login in secrets manager
         jhub_secret = secmger.Secret(self, 'jHubPwd', 
             generate_secret_string=secmger.SecretStringGenerator(
                 exclude_punctuation=True,
-                secret_string_template=json.dumps({'username': login_name.value_as_string}),
+                secret_string_template=json.dumps({'username': login_name}),
+                # secret_string_template=json.dumps({'username': login_name.value_as_string}),
                 generate_string_key="password")
         )
 
@@ -63,7 +65,8 @@ class SparkOnEksStack(Stack):
         # 2. Setup Spark application access control
         app_security = SparkOnEksSAConst(self,'spark_service_account', 
             eks_cluster.my_cluster, 
-            login_name.value_as_string,
+            login_name,
+            # login_name.value_as_string,
             self.app_s3.code_bucket,
             datalake_bucket.value_as_string
         )

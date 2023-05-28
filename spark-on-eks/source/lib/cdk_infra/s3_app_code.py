@@ -20,7 +20,8 @@ class S3AppCodeConst(Construct):
             encryption=s3.BucketEncryption.KMS_MANAGED,
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,
-            access_control = s3.BucketAccessControl.LOG_DELIVERY_WRITE
+            access_control = s3.BucketAccessControl.LOG_DELIVERY_WRITE,
+            object_ownership=s3.ObjectOwnership.OBJECT_WRITER
         )
 
         source_dir=os.path.split(os.environ['VIRTUAL_ENV'])[0]

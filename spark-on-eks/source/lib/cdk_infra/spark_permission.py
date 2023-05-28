@@ -65,8 +65,7 @@ class SparkOnEksSAConst(Construct):
         _etl_rb.node.add_dependency(self._etl_sa)
 
         self._jupyter_sa = eks_cluster.add_service_account('jhubServiceAcct', 
-            # name=login_name,
-            name='sparkoneks',
+            name=login_name,
             namespace='jupyter'
         )
         self._jupyter_sa.node.add_dependency(jupyter_ns)

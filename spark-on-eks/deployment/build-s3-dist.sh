@@ -67,7 +67,7 @@ echo "--------------------------------------------------------------------------
 echo "cd $template_dir/deployment/cdk-solution-helper"
 cd $template_dir/deployment/cdk-solution-helper
 echo "npm install"
-npm audit fix --force
+# npm audit fix --force
 npm install
 
 cd $template_dir
@@ -84,7 +84,7 @@ echo "--------------------------------------------------------------------------
 
 # # Install the global aws-cdk package
 echo "npm install -g aws-cdk@$cdk_version"
-npm audit fix --force
+# npm audit fix --force
 npm install aws-cdk@$cdk_version
 
 # Run 'cdk synth' to generate raw solution outputs
@@ -180,7 +180,7 @@ for d in `find . -mindepth 1 -maxdepth 1 -type d`; do
         echo "Initiating virtual environment"
         python3 -m venv $venv_folder
         source $venv_folder/bin/activate
-        pip3 install --upgrade -q $source_dir --target $venv_folder/lib/python3.*/site-packages
+        pip3 install --upgrade pip -q $source_dir --target $venv_folder/lib/python3.*/site-packages
         echo "package python artifact"
         cd $venv_folder/lib/python3.*/site-packages
         zip -qr9 $staging_dist_dir/$fname.zip . -x "aws_cdk/*"
@@ -193,7 +193,9 @@ for d in `find . -mindepth 1 -maxdepth 1 -type d`; do
         echo "This is Node runtime"
         echo "===================================="
         echo "Clean and rebuild artifacts"
-        npm audit fix --force
+        # npm audit fix --force
+        echo "copy package.json and package-lock.json files"
+        cp -rf $template_dir/deployment/cdk-solution-helper/*.json .
         npm run
         npm ci
         if [ "$?" = "1" ]; then
