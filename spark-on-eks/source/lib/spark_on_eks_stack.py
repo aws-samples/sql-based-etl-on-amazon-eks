@@ -42,6 +42,10 @@ class SparkOnEksStack(Stack):
         #     description="Your username login to jupyter hub.",
         #     default="sparkoneks"
         # )
+        alb_cidr = CfnParameter(self, "Load_Balancer_Allowed_CIDRs", type="String",
+            description="Must be IPv4 CIDR notation: X.X.X.X/X' that is allowed to access Load Balancer in front of Jupyter and Argo web pages. It can be your local machine's IP address, for example: 54.240.101.5/32",
+            allowed_pattern="^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})$"
+        )
 
         # Auto-generate a user login in secrets manager
         jhub_secret = secmger.Secret(self, 'jHubPwd', 
@@ -97,6 +101,7 @@ class SparkOnEksStack(Stack):
                     "{{MY_SA}}": app_security.jupyter_sa,
                     "{{REGION}}": Aws.REGION, 
                     "{{SECRET_NAME}}": name_no_suffix
+                    "{{LOCAL_IP_ADDRESS}}": alb_cidr.value_as_string
                 }, 
                 multi_resource=True)
         )

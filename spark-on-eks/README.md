@@ -40,7 +40,7 @@ cd sql-based-etl-on-amazon-eks
   |   Region  |   Launch Template |
   |  ---------------------------   |   -----------------------  |
   |  ---------------------------   |   -----------------------  |
-  **US East (N. Virginia)**| [![Deploy to AWS](images/00-deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://blogpost-sparkoneks-us-east-1.s3.amazonaws.com/blog/v2.0.0/SparkOnEKS.template) 
+  **US East (N. Virginia)**| [![Deploy to AWS](images/00-deploy-to-aws.png)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/quickcreate?stackName=SparkOnEKS&templateURL=https://blogpost-sparkoneks-us-east-1.s3.amazonaws.com/blog/v3.0.0/SparkOnEKS.template) 
 
 * Option1: Deploy with default (recommended). Check out the **Customization** session to deploy in a different region. 
 * Option2: If ETL your own data, input the parameter `datalakebucket` with your S3 bucket. 
@@ -53,7 +53,7 @@ Build your own solution on top of the project, for example reconfigure the Jupyt
 export BUCKET_NAME_PREFIX=<your_bucket_name> # bucket where customized code will reside
 export AWS_REGION=<your_region>
 export SOLUTION_NAME=blog
-export VERSION=v2.0.0 # version number for the customized code
+export VERSION=v3.0.0 # version number for the customized code
 
 # go to the project directory
 cd spark-on-eks

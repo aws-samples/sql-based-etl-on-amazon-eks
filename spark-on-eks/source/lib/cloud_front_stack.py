@@ -29,7 +29,7 @@ class NestedStack(NestedStack):
 # //****************************** add it to the application load balancer *********************************//
 # //*******************************************************************************************************//
         self._bucket=s3.Bucket.from_bucket_name(self,'cf_logbucket', logbucket)
-        self._jhub_cf = add_distribution(self, 'jhub_dist', jhub_alb_dns_name, 80, self._bucket)
+        # self._jhub_cf = add_distribution(self, 'jhub_dist', jhub_alb_dns_name, 80, self._bucket)
         self._argo_cf = add_distribution(self, 'argo_dist', argo_alb_dns_name, 2746, self._bucket)
 
 
