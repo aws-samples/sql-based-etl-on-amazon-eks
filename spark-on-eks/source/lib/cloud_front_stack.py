@@ -12,9 +12,9 @@ from constructs import Construct
 
 class NestedStack(NestedStack):
 
-    @property
-    def jhub_cf(self):
-        return self._jhub_cf
+    # @property
+    # def jhub_cf(self):
+    #     return self._jhub_cf
 
     @property
     def argo_cf(self):
