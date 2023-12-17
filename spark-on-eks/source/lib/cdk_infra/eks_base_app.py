@@ -8,8 +8,8 @@ import os
 
 class EksBaseAppConst(Construct):
     @property
-    def alb_created(self):
-        return self._alb
+    def secret_created(self):
+        return self._ext_secret    
 
     def __init__(self,scope: Construct, id: str, eks_cluster: ICluster, **kwargs,) -> None:
         super().__init__(scope, id, **kwargs)
@@ -21,7 +21,7 @@ class EksBaseAppConst(Construct):
             chart='aws-load-balancer-controller',
             repository='https://aws.github.io/eks-charts',
             release='alb',
-            version='1.4.8',
+            version='1.5.5',
             create_namespace=False,
             namespace='kube-system',
             values=load_yaml_replace_var_local(source_dir+'/app_resources/alb-values.yaml',
@@ -55,7 +55,7 @@ class EksBaseAppConst(Construct):
             )
         )
         # Add external secrets controller to EKS
-        eks_cluster.add_helm_chart('SecretContrChart',
+        self._ext_secret = eks_cluster.add_helm_chart('SecretContrChart',
             chart='kubernetes-external-secrets',
             repository='https://external-secrets.github.io/kubernetes-external-secrets/',
             release='external-secrets',
@@ -67,6 +67,7 @@ class EksBaseAppConst(Construct):
                 }
             )
         )
+        self._ext_secret.node.add_dependency(self._alb)
         # Add Spark Operator to EKS
         eks_cluster.add_helm_chart('SparkOperatorChart',
             chart='spark-operator',

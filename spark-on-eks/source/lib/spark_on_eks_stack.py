@@ -1,7 +1,7 @@
 # // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # // SPDX-License-Identifier: MIT-0
 
-from aws_cdk import (Stack, Aws, Fn, CfnParameter, aws_eks as eks,aws_secretsmanager as secmger)
+from aws_cdk import (Stack, Duration, RemovalPolicy, Aws, Fn, CfnParameter, aws_eks as eks,aws_secretsmanager as secmger,aws_kms as kms)
 from constructs import Construct
 from lib.cdk_infra.network_sg import NetworkSgConst
 from lib.cdk_infra.iam_roles import IamConst
@@ -48,12 +48,16 @@ class SparkOnEksStack(Stack):
         )
 
         # Auto-generate a user login in secrets manager
+        key = kms.Key(self, 'KMSKey',removal_policy=RemovalPolicy.DESTROY,enable_key_rotation=True)
+        key.add_alias("alias/secretsManager")
         jhub_secret = secmger.Secret(self, 'jHubPwd', 
             generate_secret_string=secmger.SecretStringGenerator(
                 exclude_punctuation=True,
                 secret_string_template=json.dumps({'username': login_name}),
                 # secret_string_template=json.dumps({'username': login_name.value_as_string}),
-                generate_string_key="password")
+                generate_string_key="password"),
+            removal_policy=RemovalPolicy.DESTROY,
+            encryption_key=key
         )
 
         # A new bucket to store app code and access logs
@@ -74,7 +78,7 @@ class SparkOnEksStack(Stack):
             self.app_s3.code_bucket,
             datalake_bucket.value_as_string
         )
-
+        app_security.node.add_dependency(base_app.secret_created)
         # 3. Install Arc Jupyter notebook to as Spark ETL IDE
         jhub_install= eks_cluster.my_cluster.add_helm_chart('JHubChart',
             chart='jupyterhub',
@@ -89,7 +93,7 @@ class SparkOnEksStack(Stack):
                     "{{region}}": Aws.REGION
                 })
         )
-        jhub_install.node.add_dependency(base_app.alb_created)
+        jhub_install.node.add_dependency(app_security)
 
         # get Arc Jupyter login from secrets manager
         name_parts= Fn.split('-',jhub_secret.secret_name)
@@ -100,13 +104,12 @@ class SparkOnEksStack(Stack):
                 fields= {
                     "{{MY_SA}}": app_security.jupyter_sa,
                     "{{REGION}}": Aws.REGION, 
-                    "{{SECRET_NAME}}": name_no_suffix
+                    "{{SECRET_NAME}}": name_no_suffix,
                     "{{LOCAL_IP_ADDRESS}}": alb_cidr.value_as_string
                 }, 
                 multi_resource=True)
         )
         config_hub.node.add_dependency(jhub_install)
-        config_hub.node.add_dependency(app_security)
 
         # 4. Install ETL orchestrator - Argo
         # can be replaced by other workflow tool, ie. Airflow
@@ -134,7 +137,8 @@ class SparkOnEksStack(Stack):
             json_path='..status.loadBalancer.ingress[0].hostname',
             object_type='ingress.networking',
             object_name='jupyterhub',
-            object_namespace='jupyter'
+            object_namespace='jupyter',
+            timeout=Duration.minutes(10)
         )
         self._jhub_alb.node.add_dependency(config_hub)
         self._argo_alb = eks.KubernetesObjectValue(self, 'argoALB',
@@ -142,7 +146,8 @@ class SparkOnEksStack(Stack):
             json_path='..status.loadBalancer.ingress[0].hostname',
             object_type='ingress.networking',
             object_name='argo-argo-workflows-server',
-            object_namespace='argo'
+            object_namespace='argo',
+            timeout=Duration.minutes(10)
         )
         self._argo_alb.node.add_dependency(argo_install)
 

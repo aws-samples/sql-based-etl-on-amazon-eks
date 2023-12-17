@@ -19,6 +19,6 @@ Tags.of(cf_nested_stack).add('project', 'sqlbasedetl')
 # Deployment Output
 CfnOutput(eks_stack,'CODE_BUCKET', value=eks_stack.code_bucket)
 CfnOutput(eks_stack,'ARGO_URL', value='https://'+ cf_nested_stack.argo_cf)
-CfnOutput(eks_stack,'JUPYTER_URL', value='http://'+ eks_stack.jhub_url)
+CfnOutput(eks_stack,'JUPYTER_URL', value='http://'+ cf_nested_stack.jhub_cf)
 
 app.synth()

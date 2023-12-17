@@ -14,7 +14,7 @@ echo "========================================================================="
 
 # 1. install k8s command tools 
 echo -e "\ninstall kubectl tool..."
-curl -O kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.26.4/2023-05-11/bin/linux/amd64/kubectl
+curl -O kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.3/2023-11-14/bin/darwin/amd64/kubectl
 chmod +x kubectl
 mkdir -p $HOME/bin && mv kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
 

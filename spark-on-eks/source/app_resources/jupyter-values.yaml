@@ -78,7 +78,7 @@ singleuser:
     limit: 4G
   extraEnv:
     CONF_ALLOW_EXPORT: "true"
-    # JAVA_OPTS: -Xmx4G
+    JAVA_OPTS: -Xmx4G
     ETL_CONF_DATALAKE_LOC: {{codeBucket}}
     ETL_CONF_AWS_REGION: {{region}}
   storage:
@@ -114,8 +114,8 @@ prePuller:
 # autoscacling setting
 scheduling:
   userScheduler:
-    enabled: true
-    replicas: 1
+    enabled: false
+
 cull:
   timeout: 1800
 

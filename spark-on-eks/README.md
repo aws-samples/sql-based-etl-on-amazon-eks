@@ -26,6 +26,7 @@ A project for a solution - SQL based ETL with a declarative framework powered by
 
 ## Prerequisites 
 
+* kubectl version must match or above the EKS cluster version.
 * [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) is available in your deployment **region**. Otherwise, use your computer to run commands.
 * The project is downloaded either to your AWS Cloudshell console or your computer.
 ```bash
