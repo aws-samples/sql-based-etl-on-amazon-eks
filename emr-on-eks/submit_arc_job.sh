@@ -34,5 +34,6 @@ aws emr-containers start-job-run --virtual-cluster-id $EMRCLUSTERID \
     --configuration-overrides '{"monitoringConfiguration": {"cloudWatchMonitoringConfiguration": {"logGroupName": "/aws/eks/'$EKSCLUSTERNAME'/jobs", "logStreamNamePrefix": "arc-job"}}}'
 
 echo "Job submitted"
-echo "Navigate to https://console.aws.amazon.com/elasticmapreduce/home?region=us-east-1#virtual-cluster-jobs:"${EMRCLUSTERID}" to view job status"
+echo "Navigate to https://console.aws.amazon.com/emr/home?#/eks/clusters/"${EMRCLUSTERID}" to view job status"
+
 echo "Navigate to the output S3 bucket here https://s3.console.aws.amazon.com/s3/buckets/"${OUTPUTS3BUCKET}" to view outputs"

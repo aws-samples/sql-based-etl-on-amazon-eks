@@ -13,11 +13,11 @@ AWS Launched [EMR on EKS](https://aws.amazon.com/emr/features/eks/) and this sam
     ```bash
     curl https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/emr-on-eks/provision.sh | bash
     ```
-3. Once provisioning is complete (~10 min), run the following command to submit a new Spark job on the virtual EMR cluster:
+3. Once provisioning is complete (~20 min), run the following command to submit a new Spark job on the virtual EMR cluster:
     ```bash
     curl https://raw.githubusercontent.com/aws-samples/sql-based-etl-on-amazon-eks/main/emr-on-eks/submit_arc_job.sh | bash
     ```
-    The sample job will create an output S3 bucket, load the [TLC green taxi trip records](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page) from public `s3://nyc-tlc/trip*data/green_tripdata*.csv`, apply schema, convert it into Parquet and store it in the output S3 bucket.
+    The sample job will create an output S3 bucket, load the [TLC green taxi trip records](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page) from public `s3://nyc-tlc/csv_backup/green_tripdata*.csv`, apply schema, convert it into Parquet and store it in the output S3 bucket.
 
     The job is defined as a [jupyter notebook green_taxi_load.ipynb](green_taxi_load.ipynb) using [Arc Framework](https://arc.tripl.ai/getting-started/) and the applied schema is defined in [green_taxi_schema.json](green_taxi_schema.json)
 
