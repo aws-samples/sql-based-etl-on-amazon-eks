@@ -84,12 +84,12 @@ Run the script with defaults if the CloudFormation stack name and AWS region are
 
 ```bash
 #use default
-./deployment/post-deployment.sh
+./spark-on-eks/deployment/post-deployment.sh
 ```
 
 ```bash
 #use different CFN name or region
-./deployment/post-deployment.sh <cloudformation_stack_name> <aws_region>
+./spark-on-eks/deployment/post-deployment.sh <cloudformation_stack_name> <aws_region>
 ```
 [*^ back to top*](#Table-of-Contents)
 ### Test job in Jupyter notebook
@@ -120,11 +120,14 @@ SELECT * FROM default.deltalake_contact_jhub WHERE id=12
 1. Check your connection in [AWS CloudShell](https://console.aws.amazon.com/cloudshell/) or on a local computer. If no access to EKS or no argoCLI installed, run the [post-deployment script](#run-a-script) again.
 ```bash
 kubectl get svc && argo version --short
+
+cd spark-on-eks
 ```
 2. Login to Argo website. The authentication token refreshes every 10mins (configurable). Run the script again if timeout.
 ```bash
 # use your CFN stack name if it is different
 export stack_name=<cloudformation_stack_name>
+
 ARGO_URL=$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='ARGOURL'].OutputValue" --output text)
 LOGIN=$(argo auth token)
 echo -e "\nArgo website:\n$ARGO_URL\n" && echo -e "Login token:\n$LOGIN\n"
@@ -176,6 +179,7 @@ To demonstrate Argo's orchestration advantage with a job dependency feature, the
 ```bash
 # change to your CFN stack name if it is different
 export stack_name=<cloudformation_stack_name>
+
 app_code_bucket=$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
 argo submit source/example/scd2-job-scheduler.yaml -n spark --watch -p codeBucket=$app_code_bucket
 ```
@@ -206,6 +210,7 @@ Submit a PySpark job [deployment/app_code/job/wordcount.py](deployment/app_code/
 ```bash
 # get an s3 bucket from CFN output
 export stack_name=<cloudformation_stack_name>
+
 app_code_bucket=$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
 # dynamically map an s3 bucket to the Spark job (one-off)
 kubectl create -n spark configmap special-config --from-literal=codeBucket=$app_code_bucket

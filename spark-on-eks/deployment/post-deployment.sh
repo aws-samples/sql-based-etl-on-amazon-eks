@@ -14,13 +14,13 @@ echo "==========================================================================
 
 # 1. install k8s command tools 
 echo "================================================================================"
-echo "  Installing kubectl tool on macOS ..."
-echo "  For other operationing system, install the kubectl > 1.27 here:"
+echo "  Installing kubectl tool on Linux ..."
+echo "  For other operating system, install the kubectl > 1.27 here:"
 echo "  https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html"
 echo "================================================================================"
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/darwin/amd64/kubectl"
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 chmod +x kubectl
-mkdir -p $HOME/bin && mv kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+sudo mkdir -p /usr/local/bin && sudo mv kubectl /usr/local/bin/kubectl && export PATH=$PATH:/usr/local/bin/
 echo "Installed kubectl version: "
 kubectl version --client
 
