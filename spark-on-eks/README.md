@@ -74,11 +74,23 @@ echo -e "\nIn web browser, paste the URL to launch the template: https://console
 ## Post-deployment
 
 ### Install command tool
+The script defaults two inputs:
+
 ```bash
-cd spark-on-eks
+export stack_name="${1:-SparkOnEKS}"
+export region="${2:-us-east-1}"
+```
+Run the script with defaults if the CloudFormation stack name and AWS region are unchanged. Otherwise, input the parameters.
+
+```bash
+#use default
 ./deployment/post-deployment.sh
 ```
 
+```bash
+#use different CFN name or region
+./deployment/post-deployment.sh <cloudformation_stack_name> <aws_region>
+```
 [*^ back to top*](#Table-of-Contents)
 ### Test job in Jupyter notebook
 1. Login with the details from the above script output. Or look up from the [Secrets Manager console](https://console.aws.amazon.com/secretsmanager/). 
@@ -112,7 +124,8 @@ kubectl get svc && argo version --short
 2. Login to Argo website. The authentication token refreshes every 10mins (configurable). Run the script again if timeout.
 ```bash
 # use your CFN stack name if it is different
-ARGO_URL=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='ARGOURL'].OutputValue" --output text)
+export stack_name=<cloudformation_stack_name>
+ARGO_URL=$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='ARGOURL'].OutputValue" --output text)
 LOGIN=$(argo auth token)
 echo -e "\nArgo website:\n$ARGO_URL\n" && echo -e "Login token:\n$LOGIN\n"
 ```
@@ -136,7 +149,7 @@ echo -e "\nArgo website:\n$ARGO_URL\n" && echo -e "Login token:\n$LOGIN\n"
           - name: step1-query
             templateRef:
               name: spark-template
-              template: sparkLocal  
+              template: sparklocal  
             arguments:
               parameters:
               - name: jobId
@@ -145,8 +158,10 @@ echo -e "\nArgo website:\n$ARGO_URL\n" && echo -e "Login token:\n$LOGIN\n"
                 value: "project=sqlbasedetl, owner=myowner, costcenter=66666"  
               - name: configUri
                 value: https://raw.githubusercontent.com/tripl-ai/arc-starter/master/examples/kubernetes/nyctaxi.ipynb
+              - name: image
+                value: ghcr.io/tripl-ai/arc:arc_3.11.1_spark_3.1.2_scala_2.12_hadoop_3.2.0_1.0.0
               - name: parameters
-                value: "--ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data \
+                value: "--ETL_CONF_DATA_URL=s3a://nyc-tlc/csv_backup \
                 --ETL_CONF_JOB_URL=https://raw.githubusercontent.com/tripl-ai/arc-starter/master/examples/kubernetes"
   ```
   ![](images/3-argo-log.png)
@@ -160,7 +175,8 @@ To demonstrate Argo's orchestration advantage with a job dependency feature, the
 2. Submit the job and check the progress in Argo web console.
 ```bash
 # change to your CFN stack name if it is different
-app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
+export stack_name=<cloudformation_stack_name>
+app_code_bucket=$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
 argo submit source/example/scd2-job-scheduler.yaml -n spark --watch -p codeBucket=$app_code_bucket
 ```
 ![](images/3-argo-job-dependency.png)
@@ -176,7 +192,7 @@ SELECT * FROM default.contact_snapshot WHERE id=12
 
 Previously, we have run the CloudFormation-like ETL job defined in Jupyter notebook. They are powered by the [Arc data framework](https://arc.tripl.ai/). It significantly simplifies and accelerates the Spark application development with zero line of code. 
 
-In this example, we will reuse the Arc docker image, because it contains the latest Spark distribution. Let's run a native Spark job that is defined by k8s's CRD [Spark Operator](https://operatorhub.io/operator/spark-gcp). It saves efforts on DevOps operation, as the way of deploying Spark application follows the same declarative approach in k8s. It is consistent with other business applications CICD deployment processes.
+In this example, we will reuse the Arc docker image, because it contains an open-source Spark distribution. Let's run a native Spark job that is defined by k8s's CRD [Spark Operator](https://operatorhub.io/operator/spark-gcp). It saves efforts on DevOps operation, as the way of deploying Spark application follows the same declarative approach in k8s. It is consistent with other business applications CICD deployment processes.
   The example demonstrates:
   * Save cost with [Amazon EC2 Spot instance](https://aws.amazon.com/ec2/spot/) type
   * Dynamically scale a Spark application - via [Dynamic Resource Allocation](https://spark.apache.org/docs/3.0.0-preview/job-scheduling.html#dynamic-resource-allocation)
@@ -189,16 +205,17 @@ In this example, we will reuse the Arc docker image, because it contains the lat
 Submit a PySpark job [deployment/app_code/job/wordcount.py](deployment/app_code/job/wordcount.py) to EKS as usual.
 ```bash
 # get an s3 bucket from CFN output
-app_code_bucket=$(aws cloudformation describe-stacks --stack-name SparkOnEKS --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
-
+export stack_name=<cloudformation_stack_name>
+app_code_bucket=$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].Outputs[?OutputKey=='CODEBUCKET'].OutputValue" --output text)
+# dynamically map an s3 bucket to the Spark job (one-off)
 kubectl create -n spark configmap special-config --from-literal=codeBucket=$app_code_bucket
+# submit the job to Spark Operator
 kubectl apply -f source/example/native-spark-job-scheduler.yaml
 ```
 Check job progress:
 ```bash
 kubectl get pod -n spark
-# watch progress on SparkUI
-# only works if submit the job from a local computer
+# watch progress on SparkUI if the job was submitted from local computer
 kubectl port-forward word-count-driver 4040:4040 -n spark
 # go to `localhost:4040` from your web browser
 ```
@@ -210,21 +227,23 @@ kubectl apply -f source/example/native-spark-job-scheduler.yaml
 
 [*^ back to top*](#Table-of-Contents)
 #### Self-recovery test
-In Spark world, we know the driver is a single point of failure of a Spark application. If driver dies, all other linked components will be discarded too. Outside of Kubernetes, it requires extra effort to set up a job rerun, in order to provide the fault tolerance capability. However, it is much simpler in Amazon EKS. Just few lines of retry definition without coding.
+We should always keep in mind that Spark driver is a single point of failure for a Spark application. If driver dies, all other linked components will be discarded too. Outside of Kubernetes, it requires extra effort to set up a job rerun, in order to provide the fault tolerance capability. However, it is much simpler in Amazon EKS. Just few lines of retry definition without coding.
 
 ![](images/4-k8s-retry.png)
 
-The pySpark job takes approx. 10 minutes to finish. Let's test the self-recovery against the active Spark cluster.
+Let's test the self-recovery against a running Spark job triggered by the previous step. If the job is completed before this test, re-run the same job.
 
 1. Driver test - manually kill the EC2 instance running your Spark driver:
 ```bash
-# find the EC2 name, replace the placeholder below
-kubectl describe pod word-count-driver -n spark
+# monitor the driver restart progress
+kubectl get po -n spark -w
 ```
 ```bash
-kubectl delete node <ec2_host_name>
-# has the driver come back?
-kubectl get pod -n spark
+# in a second terminal, locate the EC2 host
+ec2_host_name=$(kubectl describe pod word-count-driver -n spark | grep "Successfully assigned" | awk '{print $9}')
+# manually delete
+kubectl delete node $ec2_host_name
+# Did the driver come back?
 ```
 See the demonstration simulating a Spot interruption scenario: 
 ![](images/driver_interruption_test.gif)
@@ -239,7 +258,7 @@ kubectl get pod -n spark
 
 [*^ back to top*](#Table-of-Contents)
 #### Check Spot instance usage and cost savings
-Go to [Spot Request console](https://console.aws.amazon.com/ec2sp/v2/) -> Saving Summary, to find out how much running cost you just saved.
+avigate to the [Spot Requests console](https://console.aws.amazon.com/ec2sp/v2/){:target="_blank"} -> click on the "Saving Summary" button. It will show you how much running cost you have just saved.
 
 #### Autoscaling & Dynamic Allocation support
 

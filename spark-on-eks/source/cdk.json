@@ -4,6 +4,7 @@
     "cluster_name": "spark-on-eks",
     "solution_name": "sql-based-etl-with-apache-spark-on-amazon-eks",
     "version": "2.0.0",
-    "@aws-cdk/core:stackRelativeExports": "false"
+    "@aws-cdk/core:stackRelativeExports": true,
+    "@aws-cdk/customresources:installLatestAwsSdkDefault": false
   }
 }
