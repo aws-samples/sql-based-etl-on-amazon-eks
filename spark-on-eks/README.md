@@ -257,13 +257,14 @@ See the demonstration simulating a Spot interruption scenario:
 ```bash
 exec_name=$(kubectl get pod -n spark | grep "exec-1" | awk '{print $1}')
 kubectl delete -n spark pod $exec_name --force
-# has it come back with a different number suffix? 
-kubectl get pod -n spark
+# check the log, has the executor come back with a different number suffix? 
+kubectl logs word-count-driver -n spark
 ```
+![](images/executor_interruption_test.png)
 
 [*^ back to top*](#Table-of-Contents)
 #### Check Spot instance usage and cost savings
-avigate to the [Spot Requests console](https://console.aws.amazon.com/ec2sp/v2/){:target="_blank"} -> click on the "Saving Summary" button. It will show you how much running cost you have just saved.
+Navigate to the [Spot Requests console](https://console.aws.amazon.com/ec2/home?#SpotInstances) -> click on the "Savings summary" button. It will show you how much running cost you have just saved.
 
 #### Autoscaling & Dynamic Allocation support
 
@@ -294,8 +295,24 @@ If you are concerned about the job performance, simply fit it into a single AZ b
 [*^ back to top*](#Table-of-Contents)
 ## Clean up
 Go to the repo's root directory, and run the clean-up script with your CloudFormation stack name.The default value is SparkOnEKS. If an error "(ResourceInUse) when calling the DeleteTargetGroup operation" occurs, simply run the script again.
+
+The script defaults two inputs:
+
+```bash
+export stack_name="${1:-SparkOnEKS}"
+export region="${2:-us-east-1}"
+```
+Run the script with defaults if the CloudFormation stack name and AWS region are unchanged. Otherwise, run it with your parameters.
+
 ```bash
 cd sql-based-etl-on-amazon-eks/spark-on-eks
+# use default
 ./deployment/delete_all.sh
 ```
+
+```bash
+# use different CFN name or region
+./deployment/delete_all.sh <cloudformation_stack_name> <aws_region>
+```
+
 Go to your [CloudFormation console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1), manually delete the remaining resources if needed.
